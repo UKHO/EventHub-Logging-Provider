@@ -36,9 +36,9 @@ namespace UKHO.Logging.EventHubLogProvider
         private readonly string nodeName;
         private readonly Action<IDictionary<string, object>> additionalValuesProvider;
 
-        internal EventHubLogger(IEventHubLog eventHubLog,
-                                string categoryName,
-                                EventHubLogProviderOptions options)
+        public EventHubLogger(IEventHubLog eventHubLog,
+                              string categoryName,
+                              EventHubLogProviderOptions options)
         {
             this.eventHubLog = eventHubLog;
             this.categoryName = categoryName;

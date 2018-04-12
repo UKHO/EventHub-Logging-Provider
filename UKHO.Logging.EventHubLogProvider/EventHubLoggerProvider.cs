@@ -22,13 +22,13 @@ using Microsoft.Extensions.Logging;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    public class EventHubLogProvider : ILoggerProvider
+    public class EventHubLoggerProvider : ILoggerProvider
     {
         private readonly EventHubLogProviderOptions options;
         private readonly IEventHubLog eventHubLog;
         private bool disposed;
 
-        public EventHubLogProvider(EventHubLogProviderOptions options,
+        public EventHubLoggerProvider(EventHubLogProviderOptions options,
                                    IEventHubLog eventHubLog)
         {
             this.options = options;
@@ -43,7 +43,7 @@ namespace UKHO.Logging.EventHubLogProvider
             disposed = true;
         }
 
-        ~EventHubLogProvider()
+        ~EventHubLoggerProvider()
         {
             Dispose();
             GC.SuppressFinalize(this);
@@ -56,14 +56,14 @@ namespace UKHO.Logging.EventHubLogProvider
     }
 
     [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
-    public static class EventHubLogProviderExtensions
+    public static class EventHubLoggerProviderExtensions
     {
         public static ILoggerFactory AddEventHub(this ILoggerFactory loggerFactory, Action<EventHubLogProviderOptions> config)
         {
             var options = new EventHubLogProviderOptions();
             config(options);
             options.Validate();
-            loggerFactory.AddProvider(new EventHubLogProvider(options,
+            loggerFactory.AddProvider(new EventHubLoggerProvider(options,
                                                               new EventHubLog(options.EventHubConnectionString, options.EventHubEntityPath)));
             return loggerFactory;
         }
