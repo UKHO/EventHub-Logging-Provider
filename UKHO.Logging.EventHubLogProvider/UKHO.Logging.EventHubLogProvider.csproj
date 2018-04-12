@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <PackageProjectUrl>https://github.com/serilog/serilog-extensions-logging</PackageProjectUrl>
+    <PackageLicenseUrl>http://technology/TPE/Documents/UKHO-Internal-Use-Licence.docx</PackageLicenseUrl>
+    <Authors>UK Hydrographic Office</Authors>
+    <Company>UK Hydrographic Office</Company>
+    <Description>Log provider for Microsoft.Extensions.Logging to log to Azure EventHub</Description>
+  </PropertyGroup>
+
+</Project>
