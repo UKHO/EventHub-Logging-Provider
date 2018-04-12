@@ -5,6 +5,12 @@ VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.Logging.EventHubLogProvider", "UKHO.Logging.EventHubLogProvider\UKHO.Logging.EventHubLogProvider.csproj", "{F1844B13-053E-412C-A4FD-68D8AC35BE43}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EE74FFF2-8866-4494-8245-76552165C465}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{071DB479-EE00-43EA-9142-E6C3789F530F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.Logging.EventHubLogProviderTest", "UKHO.Logging.EventHubLogProviderTest\UKHO.Logging.EventHubLogProviderTest.csproj", "{1C800402-5E9D-4DC2-AE95-69BE92849D7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +21,17 @@ Global
 		{F1844B13-053E-412C-A4FD-68D8AC35BE43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1844B13-053E-412C-A4FD-68D8AC35BE43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1844B13-053E-412C-A4FD-68D8AC35BE43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C800402-5E9D-4DC2-AE95-69BE92849D7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C800402-5E9D-4DC2-AE95-69BE92849D7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C800402-5E9D-4DC2-AE95-69BE92849D7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C800402-5E9D-4DC2-AE95-69BE92849D7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{071DB479-EE00-43EA-9142-E6C3789F530F} = {EE74FFF2-8866-4494-8245-76552165C465}
+		{1C800402-5E9D-4DC2-AE95-69BE92849D7B} = {071DB479-EE00-43EA-9142-E6C3789F530F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {35192781-3C58-4649-ADA6-EF2A20409F0F}
