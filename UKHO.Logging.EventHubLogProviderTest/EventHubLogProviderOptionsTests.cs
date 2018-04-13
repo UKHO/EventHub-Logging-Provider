@@ -70,7 +70,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void TestValidateOkWithAllValuesSetButNodeNameUnset()
+        public void TestValidateWithAllValuesSetButNodeNameUnsetWillThrowExceptionForTheNodeName()
         {
             var options = new EventHubLogProviderOptions
                           {
