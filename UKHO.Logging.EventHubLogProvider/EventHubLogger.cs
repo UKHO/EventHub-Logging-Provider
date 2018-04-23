@@ -28,7 +28,6 @@ namespace UKHO.Logging.EventHubLogProvider
         private const string OriginalFormatPropertyName = "{OriginalFormat}";
         private readonly IEventHubLog eventHubLog;
         private readonly LogLevel minimumLogLevel;
-        private readonly LogLevel ukhoMinimumLogLevel;
         private readonly string environment;
         private readonly string categoryName;
         private readonly string system;
@@ -42,8 +41,7 @@ namespace UKHO.Logging.EventHubLogProvider
         {
             this.eventHubLog = eventHubLog;
             this.categoryName = categoryName;
-            minimumLogLevel = options.MinimumLogLevel;
-            ukhoMinimumLogLevel = options.UkhoMinimumLogLevel;
+            minimumLogLevel = options.GetMinimumLogLevelForCategory(categoryName);
             environment = options.Environment;
             system = options.System;
             service = options.Service;
@@ -122,7 +120,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return categoryName.StartsWith("UKHO") ? logLevel >= ukhoMinimumLogLevel : logLevel >= minimumLogLevel;
+            return logLevel >= minimumLogLevel;
         }
 
         [ExcludeFromCodeCoverage] // nothing to test

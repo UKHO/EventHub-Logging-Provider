@@ -31,8 +31,8 @@ namespace UKHO.Logging.EventHubLogProvider
         private string nodeName = HashMachineName;
         public string EventHubConnectionString { get; set; }
         public string EventHubEntityPath { get; set; }
-        public LogLevel MinimumLogLevel { get; set; } = LogLevel.Information;
-        public LogLevel UkhoMinimumLogLevel { get; set; } = LogLevel.Information;
+        public LogLevel DefaultMinimumLogLevel { get; set; } = LogLevel.Information;
+        public IDictionary<string, LogLevel> MinimumLogLevels { get; } = new Dictionary<string, LogLevel>();
         public string Environment { get; set; }
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
@@ -66,6 +66,31 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (errors.Any())
                 throw new ArgumentException($"Parameters {string.Join(",", errors)} must be set to a valid value.", string.Join(",", errors));
+
+            if (MinimumLogLevels.ContainsKey(""))
+                throw new ArgumentException($"Parameter {nameof(MinimumLogLevels)} can not contain an empty key.", nameof(MinimumLogLevels));
+        }
+
+        public LogLevel GetMinimumLogLevelForCategory(string categoryName)
+        {
+            var categoryTokens = SplitKey(categoryName);
+            var configuration = MinimumLogLevels
+                .Select(kv => new KeyValuePair<string[], LogLevel>(SplitKey(kv.Key), kv.Value))
+                .Where(kv =>
+                       {
+                           return kv.Key.Select((k, i) => (k, i))
+                               .All(k => k.Item2 < categoryTokens.Length && k.Item1 == categoryTokens[k.Item2]);
+                       })
+                .OrderByDescending(kv => kv.Key.Length)
+                .Select(kv => kv.Value)
+                .DefaultIfEmpty(DefaultMinimumLogLevel)
+                .FirstOrDefault();
+            return configuration;
+        }
+
+        private static string[] SplitKey(string key)
+        {
+            return key.Split('.').SelectMany(k => k.Split('\\')).ToArray();
         }
     }
 }

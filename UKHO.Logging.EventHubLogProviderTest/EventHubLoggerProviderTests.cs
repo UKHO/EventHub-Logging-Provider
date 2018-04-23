@@ -38,8 +38,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             fakeEventHubLog = A.Fake<IEventHubLog>();
             eventHubLogProvider = new EventHubLoggerProvider(new EventHubLogProviderOptions
                                                              {
-                                                                 MinimumLogLevel = LogLevel.Critical,
-                                                                 UkhoMinimumLogLevel = LogLevel.Debug,
+                                                                 DefaultMinimumLogLevel = LogLevel.Critical,
                                                                  Environment = "Test Environment",
                                                                  System = "system",
                                                                  Service = "service",

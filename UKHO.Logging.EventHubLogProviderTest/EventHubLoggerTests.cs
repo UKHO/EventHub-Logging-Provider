@@ -253,13 +253,13 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                       category,
                                       new EventHubLogProviderOptions
                                       {
-                                          MinimumLogLevel = configLogLevel,
-                                          UkhoMinimumLogLevel = ukhoLogLevel,
+                                          DefaultMinimumLogLevel = configLogLevel,
                                           NodeName = NodeName,
                                           System = System,
                                           Environment = "Test Environment",
                                           Service = Service,
-                                          AdditionalValuesProvider = additionalValuesProvider ?? (d => { })
+                                          AdditionalValuesProvider = additionalValuesProvider ?? (d => { }),
+                                          MinimumLogLevels = { { "UKHO", ukhoLogLevel } }
                                       });
         }
     }

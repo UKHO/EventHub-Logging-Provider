@@ -62,11 +62,45 @@ namespace UKHO.Logging.EventHubLogProviderTest
                               EventHubEntityPath = "Path",
                               Service = "Service",
                               System = "System",
-                              MinimumLogLevel = LogLevel.Critical,
-                              UkhoMinimumLogLevel = LogLevel.Critical,
+                              DefaultMinimumLogLevel = LogLevel.Critical,
                               NodeName = "Bill"
                           };
             options.Validate();
+        }
+
+        [Test]
+        public void TestValidateFailsWithAnEmptyNamespaceLogLevelOverride()
+        {
+            var options = new EventHubLogProviderOptions
+                          {
+                              Environment = "Env",
+                              EventHubConnectionString = "Connect!",
+                              EventHubEntityPath = "Path",
+                              Service = "Service",
+                              System = "System",
+                              MinimumLogLevels = { { "", LogLevel.Critical } }
+                          };
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            Assert.AreEqual("MinimumLogLevels", argumentException.ParamName);
+            Assert.AreEqual($"Parameter MinimumLogLevels can not contain an empty key.{Environment.NewLine}Parameter name: MinimumLogLevels", argumentException.Message);
+        }
+
+        [Test]
+        public void TestValidateFailsWhenAdditionalValuesActionSetToNull()
+        {
+            var options = new EventHubLogProviderOptions
+                          {
+                              Environment = "Env",
+                              EventHubConnectionString = "Connect!",
+                              EventHubEntityPath = "Path",
+                              Service = "Service",
+                              System = "System",
+                              AdditionalValuesProvider = null
+                          };
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            Assert.AreEqual("AdditionalValuesProvider", argumentException.ParamName);
+            Assert.AreEqual($"Parameters AdditionalValuesProvider must be set to a valid value.{Environment.NewLine}Parameter name: AdditionalValuesProvider",
+                            argumentException.Message);
         }
 
         [Test]
@@ -79,8 +113,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                               EventHubEntityPath = "Path",
                               Service = "Service",
                               System = "System",
-                              MinimumLogLevel = LogLevel.Critical,
-                              UkhoMinimumLogLevel = LogLevel.Critical,
+                              DefaultMinimumLogLevel = LogLevel.Critical,
                               NodeName = ""
                           };
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
@@ -97,6 +130,25 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             eventHubLogProviderOptions.NodeName = "ExplictValue";
             Assert.AreEqual("ExplictValue", eventHubLogProviderOptions.NodeName);
+        }
+
+        [Test]
+        public void TestConfigureLoggingLevelsForDifferentNamespaces()
+        {
+            var options = new EventHubLogProviderOptions() { DefaultMinimumLogLevel = LogLevel.Critical };
+            options.MinimumLogLevels["UKHO"] = LogLevel.Trace;
+            options.MinimumLogLevels["UKHO.Logging"] = LogLevel.Information;
+            options.MinimumLogLevels["UKHO.Logging.Event"] = LogLevel.None;
+            options.MinimumLogLevels["UKHO.Security"] = LogLevel.Debug;
+            options.MinimumLogLevels["AnImportant\\Path"] = LogLevel.Warning;
+
+            Assert.AreEqual(LogLevel.Information, options.GetMinimumLogLevelForCategory("UKHO.Logging.EventLogger"));
+            Assert.AreEqual(LogLevel.Debug, options.GetMinimumLogLevelForCategory("UKHO.Security.Authentication.AnAuthenticator"));
+            Assert.AreEqual(LogLevel.Trace, options.GetMinimumLogLevelForCategory("UKHO.Controllers.AController"));
+            Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("System.SomeSystemClass"));
+            Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("ARandomPath\\With\\Some\\Folders"));
+            Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path"));
+            Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path\\WithChild"));
         }
     }
 }
