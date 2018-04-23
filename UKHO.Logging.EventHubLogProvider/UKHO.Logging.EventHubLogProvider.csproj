@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <PackageProjectUrl>https://github.com/serilog/serilog-extensions-logging</PackageProjectUrl>
-    <PackageLicenseUrl>http://technology/TPE/Documents/UKHO-Internal-Use-Licence.docx</PackageLicenseUrl>
+    <PackageProjectUrl>https://gitlab.com/UKHO/UKHO.Logging.EventHubLogProvider</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/UKHO/licences/blob/master/ukho-int/licence.md</PackageLicenseUrl>
     <Authors>UK Hydrographic Office</Authors>
     <Company>UK Hydrographic Office</Company>
     <Description>Log provider for Microsoft.Extensions.Logging to log to Azure EventHub</Description>
