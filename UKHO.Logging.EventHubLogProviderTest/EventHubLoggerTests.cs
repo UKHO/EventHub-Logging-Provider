@@ -135,14 +135,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                           });
             eventHubLogger.Log(attemptedLogLevel, eventId, state, loggedException, (o, exception) => testMessage);
 
-            Assert.AreEqual(environment, loggedEntry.LogSource.LogProperties["_Environment"]);
-            Assert.AreEqual(myCorrelationId, loggedEntry.LogSource.LogProperties["_CorrelationId"]);
-            Assert.AreEqual(testMessage, loggedEntry.LogSource.MessageTemplate);
-            Assert.AreEqual(category, loggedEntry.LogSource.LogProperties["_ComponentName"]);
-            Assert.AreEqual(loggedException, loggedEntry.LogSource.Exception);
-            Assert.AreEqual(Service, loggedEntry.LogSource.LogProperties["_Service"]);
-            Assert.AreEqual(eventId, loggedEntry.LogSource.EventId);
-            Assert.AreEqual(myUser, loggedEntry.LogSource.LogProperties["_Username"]);
+            Assert.AreEqual(environment, loggedEntry.LogProperties["_Environment"]);
+            Assert.AreEqual(myCorrelationId, loggedEntry.LogProperties["_CorrelationId"]);
+            Assert.AreEqual(testMessage, loggedEntry.MessageTemplate);
+            Assert.AreEqual(category, loggedEntry.LogProperties["_ComponentName"]);
+            Assert.AreEqual(loggedException, loggedEntry.Exception);
+            Assert.AreEqual(Service, loggedEntry.LogProperties["_Service"]);
+            Assert.AreEqual(eventId, loggedEntry.EventId);
+            Assert.AreEqual(myUser, loggedEntry.LogProperties["_Username"]);
         }
 
         [TestCase(LogLevel.None, LogLevel.Critical, LogLevel.Critical, "UKHO.SomeNamespace.SomeClass", true)]
@@ -183,7 +183,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                "_Service",
                                                "_System",
                                            }.ToList(),
-                                           loggedEntry.LogSource.LogProperties.Keys);
+                                           loggedEntry.LogProperties.Keys);
         }
 
         [Test]
@@ -197,13 +197,13 @@ namespace UKHO.Logging.EventHubLogProviderTest
             IEnumerable<KeyValuePair<string, object>> structuredData = new Dictionary<string, object> { { "Property1", "Value1" }, { "Property2", "Value Two" }, };
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(", ", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
-            CollectionAssert.DoesNotContain(loggedEntry.LogSource.LogProperties.Keys, "MessageTemplate");
-            CollectionAssert.Contains(loggedEntry.LogSource.LogProperties.Keys, "Property1");
-            CollectionAssert.Contains(loggedEntry.LogSource.LogProperties.Keys, "Property2");
+            CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
+            CollectionAssert.Contains(loggedEntry.LogProperties.Keys, "Property1");
+            CollectionAssert.Contains(loggedEntry.LogProperties.Keys, "Property2");
 
-            Assert.AreEqual("Value1", loggedEntry.LogSource.LogProperties["Property1"]);
-            Assert.AreEqual("Value Two", loggedEntry.LogSource.LogProperties["Property2"]);
-            Assert.AreEqual("Property1:Value1, Property2:Value Two", loggedEntry.LogSource.MessageTemplate);
+            Assert.AreEqual("Value1", loggedEntry.LogProperties["Property1"]);
+            Assert.AreEqual("Value Two", loggedEntry.LogProperties["Property2"]);
+            Assert.AreEqual("Property1:Value1, Property2:Value Two", loggedEntry.MessageTemplate);
         }
 
         [Test]
@@ -217,12 +217,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
                 new FormattedLogValues("Message with {Property1} and {Property2} and a escaped C# keyword name {@var}", "Value 1", "Value 2", "Var value");
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(",", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
-            CollectionAssert.DoesNotContain(loggedEntry.LogSource.LogProperties.Keys, "MessageTemplate");
-            CollectionAssert.Contains(loggedEntry.LogSource.LogProperties.Keys, "Property1");
-            Assert.AreEqual("Value 1", loggedEntry.LogSource.LogProperties["Property1"]);
-            Assert.AreEqual("Value 2", loggedEntry.LogSource.LogProperties["Property2"]);
-            Assert.AreEqual("Var value", loggedEntry.LogSource.LogProperties["var"]);
-            Assert.AreEqual("Message with {Property1} and {Property2} and a escaped C# keyword name {@var}", loggedEntry.LogSource.MessageTemplate);
+            CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
+            CollectionAssert.Contains(loggedEntry.LogProperties.Keys, "Property1");
+            Assert.AreEqual("Value 1", loggedEntry.LogProperties["Property1"]);
+            Assert.AreEqual("Value 2", loggedEntry.LogProperties["Property2"]);
+            Assert.AreEqual("Var value", loggedEntry.LogProperties["var"]);
+            Assert.AreEqual("Message with {Property1} and {Property2} and a escaped C# keyword name {@var}", loggedEntry.MessageTemplate);
         }
 
         [Test]
@@ -236,11 +236,11 @@ namespace UKHO.Logging.EventHubLogProviderTest
                 new FormattedLogValues("Message with {Property1} and {Property1} and a escaped C# keyword name {@var}", "Value 1", "Value 2", "Var value");
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(",", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
-            CollectionAssert.DoesNotContain(loggedEntry.LogSource.LogProperties.Keys, "MessageTemplate");
-            CollectionAssert.Contains(loggedEntry.LogSource.LogProperties.Keys, "Property1");
-            CollectionAssert.AreEqual(new[] { "Value 1", "Value 2" }.ToList(), loggedEntry.LogSource.LogProperties["Property1"] as IEnumerable);
-            Assert.AreEqual("Var value", loggedEntry.LogSource.LogProperties["var"]);
-            Assert.AreEqual("Message with {Property1} and {Property1} and a escaped C# keyword name {@var}", loggedEntry.LogSource.MessageTemplate);
+            CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
+            CollectionAssert.Contains(loggedEntry.LogProperties.Keys, "Property1");
+            CollectionAssert.AreEqual(new[] { "Value 1", "Value 2" }.ToList(), loggedEntry.LogProperties["Property1"] as IEnumerable);
+            Assert.AreEqual("Var value", loggedEntry.LogProperties["var"]);
+            Assert.AreEqual("Message with {Property1} and {Property1} and a escaped C# keyword name {@var}", loggedEntry.MessageTemplate);
         }
 
         private EventHubLogger CreateTestEventHubLogger(LogLevel configLogLevel,

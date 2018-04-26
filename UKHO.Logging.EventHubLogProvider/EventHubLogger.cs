@@ -105,15 +105,12 @@ namespace UKHO.Logging.EventHubLogProvider
             var logProperties = BuildLogProperties();
             var logEntry = new LogEntry
                            {
-                               LogSource = new LogSource
-                                           {
-                                               Exception = exception,
-                                               EventId = eventId,
-                                               Level = logLevel.ToString(),
-                                               MessageTemplate = logProperties.MessageTemplate,
-                                               Timestamp = DateTime.UtcNow,
-                                               LogProperties = logProperties.logProperties
-                                           }
+                               Exception = exception,
+                               EventId = eventId,
+                               Level = logLevel.ToString(),
+                               MessageTemplate = logProperties.MessageTemplate,
+                               Timestamp = DateTime.UtcNow,
+                               LogProperties = logProperties.logProperties
                            };
             eventHubLog.Log(logEntry);
         }

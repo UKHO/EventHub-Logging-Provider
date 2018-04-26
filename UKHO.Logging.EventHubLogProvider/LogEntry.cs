@@ -26,12 +26,6 @@ namespace UKHO.Logging.EventHubLogProvider
 {
     public class LogEntry
     {
-        [JsonProperty("_source")]
-        public LogSource LogSource { get; set; }
-    }
-
-    public class LogSource
-    {
         [JsonProperty("Timestamp")]
         public DateTime Timestamp { get; set; }
 
