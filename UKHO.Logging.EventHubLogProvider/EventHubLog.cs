@@ -41,7 +41,8 @@ namespace UKHO.Logging.EventHubLogProvider
             eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
             settings = new JsonSerializerSettings
                        {
-                           Formatting = Formatting.Indented
+                           Formatting = Formatting.Indented,
+                           ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                        };
         }
 
