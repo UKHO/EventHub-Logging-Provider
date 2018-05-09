@@ -243,6 +243,29 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.AreEqual("Message with {Property1} and {Property1} and a escaped C# keyword name {@var}", loggedEntry.MessageTemplate);
         }
 
+        [Test]
+        public void TestLoggerAddsAdditionalParameters()
+        {
+            LogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => d["AdditionalData"] = "NewData");
+            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
+            Assert.AreEqual("NewData", loggedEntry.LogProperties["AdditionalData"]);
+        }
+
+        [Test]
+        public void TestLoggerAddExceptionToLogIfAdditionalParametersActionExplodes()
+        {
+            LogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            var exception = new Exception("My Exception Message");
+            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => throw exception);
+            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
+            Assert.IsFalse(loggedEntry.LogProperties.ContainsValue("AdditionalData"));
+            Assert.AreEqual("additionalValuesProvider throw exception: My Exception Message", loggedEntry.LogProperties["LoggingError"]);
+            Assert.AreSame(exception, loggedEntry.LogProperties["LoggingErrorException"]);
+        }
+
         private EventHubLogger CreateTestEventHubLogger(LogLevel configLogLevel,
                                                         LogLevel ukhoLogLevel,
                                                         string category,
