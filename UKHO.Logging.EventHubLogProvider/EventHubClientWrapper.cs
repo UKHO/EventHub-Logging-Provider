@@ -16,47 +16,38 @@
 // OF SUCH DAMAGE.
 
 using System;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 using Microsoft.Azure.EventHubs;
 
-using Newtonsoft.Json;
-
 namespace UKHO.Logging.EventHubLogProvider
 {
-    internal class EventHubLog : IEventHubLog
+    //Wrapper for the external library so we can test things.
+    internal interface IEventHubClientWrapper : IDisposable
     {
-        private IEventHubClientWrapper eventHubClientWrapperWrapper;
-        private readonly JsonSerializerSettings settings;
+        Task SendAsync(EventData eventData);
+    }
 
-        public EventHubLog(IEventHubClientWrapper eventHubClientWrapperWrapper)
-        {
-            this.eventHubClientWrapperWrapper = eventHubClientWrapperWrapper;
-            settings = new JsonSerializerSettings
-                       {
-                           Formatting = Formatting.Indented,
-                           ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                           ContractResolver = new NullPropertyResolver()
-                       };
-        }
+    [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
+    public class EventHubClientWrapper : IEventHubClientWrapper
+    {
+        private EventHubClient eventHubClient;
 
-        public async void Log(ILogEntry logEntry)
+        public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath)
         {
-            try
-            {
-                var jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
-                await eventHubClientWrapperWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            var connectionStringBuilder = new EventHubsConnectionStringBuilder(eventHubConnectionString)
+                                          {
+                                              EntityPath = eventHubEntityPath
+                                          };
+
+            eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
         }
 
         private void ReleaseUnmanagedResources()
         {
-            eventHubClientWrapperWrapper?.Dispose();
-            eventHubClientWrapperWrapper = null;
+            eventHubClient?.Close();
+            eventHubClient = null;
         }
 
         public void Dispose()
@@ -65,9 +56,14 @@ namespace UKHO.Logging.EventHubLogProvider
             GC.SuppressFinalize(this);
         }
 
-        ~EventHubLog()
+        ~EventHubClientWrapper()
         {
             ReleaseUnmanagedResources();
+        }
+
+        public Task SendAsync(EventData eventData)
+        {
+            return eventHubClient.SendAsync(eventData);
         }
     }
 }

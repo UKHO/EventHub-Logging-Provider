@@ -71,7 +71,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             eventHubLogger.Log<object>(attemptedLogLevel, 0, null, null, null);
 
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).MustNotHaveHappened();
         }
 
         [TestCase(LogLevel.None, LogLevel.Critical)]
@@ -101,7 +101,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             eventHubLogger.Log<object>(attemptedLogLevel, 0, null, null, null);
 
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).MustNotHaveHappened();
         }
 
         [TestCase(LogLevel.None, LogLevel.Critical, LogLevel.Critical, "UKHO.SomeNamespace.SomeClass")]
@@ -121,8 +121,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var loggedException = new Exception();
             var eventId = (EventId)12345;
             var myUser = "MyUser";
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(configLogLevel,
                                                           ukhoConfigLogLevel,
@@ -169,8 +169,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerLogsRequiredEnvironmentParameters()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
             eventHubLogger.Log(LogLevel.Information, 123, "Simple Message", null, (s, e) => s);
@@ -189,8 +189,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerLogsAllTheIndividualParamsForStructuredData()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
 
@@ -209,8 +209,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerLogsAllTheIndividualParamsForStructuredDataUsingFormattedLogValues()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
             IEnumerable<KeyValuePair<string, object>> structuredData =
@@ -228,8 +228,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerLogsAllTheIndividualParamsForStructuredDataUsingFormattedLogValuesWithDuplicateParameterNames()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
             IEnumerable<KeyValuePair<string, object>> structuredData =
@@ -246,8 +246,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerAddsAdditionalParameters()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => d["AdditionalData"] = "NewData");
             eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
             Assert.AreEqual("NewData", loggedEntry.LogProperties["AdditionalData"]);
@@ -256,8 +256,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestLoggerAddExceptionToLogIfAdditionalParametersActionExplodes()
         {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            ILogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<ILogEntry>.Ignored)).Invokes((ILogEntry l) => loggedEntry = l);
             var exception = new Exception("My Exception Message");
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => throw exception);
             eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);

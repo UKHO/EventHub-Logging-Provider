@@ -19,8 +19,8 @@ using System;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    public interface IEventHubLog : IDisposable
+    internal interface IEventHubLog : IDisposable
     {
-        void Log(LogEntry logEntry);
+        void Log(ILogEntry logEntry);
     }
 }
