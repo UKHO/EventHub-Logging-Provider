@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 
 using FakeItEasy;
 
@@ -27,6 +26,7 @@ using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using NUnit.Framework;
 
@@ -42,12 +42,11 @@ namespace UKHO.Logging.EventHubLogProviderTest
         {
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
-
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
-            var mockLogEntry = new LogEntry()
+            var testLogEntry = new LogEntry()
                                {
                                    EventId = new EventId(2),
                                    Timestamp = new DateTime(2002, 03, 04),
@@ -56,20 +55,20 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                    MessageTemplate = "Hello this is a message template",
                                    Level = "Debug"
                                };
-            mockLogEntry.LogProperties.Add("circular",mockLogEntry);
+            testLogEntry.LogProperties.Add("circular", testLogEntry);
 
-            eventHubLog.Log(mockLogEntry);
+            eventHubLog.Log(testLogEntry);
 
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 
             var sentString = Encoding.UTF8.GetString(sentBytes);
             var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
-            Assert.AreEqual(mockLogEntry.Timestamp, sentLogEntry.Timestamp);
-            Assert.AreEqual(mockLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
-            CollectionAssert.AreEqual(mockLogEntry.LogProperties.Take(1), sentLogEntry.LogProperties);
-            Assert.AreEqual(mockLogEntry.EventId, sentLogEntry.EventId);
-            Assert.AreEqual(mockLogEntry.Exception.Message, sentLogEntry.Exception.Message);
-            Assert.AreEqual(mockLogEntry.Level, sentLogEntry.Level);
+            Assert.AreEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
+            Assert.AreEqual(testLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
+            CollectionAssert.AreEqual(testLogEntry.LogProperties.Take(1), sentLogEntry.LogProperties);
+            Assert.AreEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreEqual(testLogEntry.Exception.Message, sentLogEntry.Exception.Message);
+            Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
         }
 
         [Test]
@@ -81,7 +80,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
-            var mockLogEntry = new LogEntry()
+            var testLogEntry = new LogEntry()
                                {
                                    EventId = new EventId(2),
                                    Timestamp = new DateTime(2002, 03, 04),
@@ -90,17 +89,17 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                    MessageTemplate = "Hello this is a message template",
                                    Level = "Debug"
                                };
-            eventHubLog.Log(mockLogEntry);
+            eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 
             var sentString = Encoding.UTF8.GetString(sentBytes);
             var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
-            Assert.AreEqual(mockLogEntry.Timestamp, sentLogEntry.Timestamp);
-            Assert.AreEqual(mockLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
-            CollectionAssert.AreEqual(mockLogEntry.LogProperties, sentLogEntry.LogProperties);
-            Assert.AreEqual(mockLogEntry.EventId, sentLogEntry.EventId);
-            Assert.AreEqual(mockLogEntry.Exception.Message, sentLogEntry.Exception.Message);
-            Assert.AreEqual(mockLogEntry.Level, sentLogEntry.Level);
+            Assert.AreEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
+            Assert.AreEqual(testLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
+            CollectionAssert.AreEqual(testLogEntry.LogProperties, sentLogEntry.LogProperties);
+            Assert.AreEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreEqual(testLogEntry.Exception.Message, sentLogEntry.Exception.Message);
+            Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
         }
 
         [Test]
@@ -112,47 +111,94 @@ namespace UKHO.Logging.EventHubLogProviderTest
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
-            var mockLogEntry = new MockLogEntry()
+            var testLogEntry = new LogEntry()
                                {
                                    EventId = new EventId(2),
                                    Timestamp = new DateTime(2002, 03, 04),
                                    Exception = new InvalidOperationException("TestLoggedException"),
-                                   LogProperties = new Dictionary<string, object> { { "hi", "Guys" } },
-                                   MessageTemplate = "Hello this is a message template"
+                                   LogProperties = new Dictionary<string, object> { { "hi", "Guys" }, { "thowable", new ObjectThatThrows() } },
+                                   MessageTemplate = "Hello this is a message template",
+                                   Level = "LogLevel"
                                };
-            eventHubLog.Log(mockLogEntry);
+            eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 
             var sentString = Encoding.UTF8.GetString(sentBytes);
             var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
-            Assert.AreEqual(mockLogEntry.Timestamp, sentLogEntry.Timestamp);
-            Assert.AreEqual(mockLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
-            CollectionAssert.AreEqual(mockLogEntry.LogProperties, sentLogEntry.LogProperties);
-            Assert.AreEqual(mockLogEntry.EventId, sentLogEntry.EventId);
-            Assert.AreEqual(mockLogEntry.Exception.Message, sentLogEntry.Exception.Message);
-            Assert.AreEqual(null, sentLogEntry.Level);
+            Assert.AreEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
+            Assert.AreEqual(testLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
+
+            Assert.AreEqual(2, sentLogEntry.LogProperties.Count);
+            Assert.AreEqual(testLogEntry.LogProperties.First(),sentLogEntry.LogProperties.First());
+
+            var asJObject = (JObject)sentLogEntry.LogProperties.Skip(1).First().Value;
+
+            Assert.AreEqual(new ObjectThatThrows().NotThrowable, asJObject["NotThrowable"].Value<string>());
+
+            Assert.AreEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreEqual(testLogEntry.Exception.Message, sentLogEntry.Exception.Message);
+            Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
+         }
+
+        [Test]
+        public void TestSerializesJsonThrowsExceptionThisExceptionIsLogged()
+        {
+            var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
+
+            byte[] sentBytes = null;
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+
+            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var testLogEntry = new LogEntry()
+            {
+                EventId = new EventId(2),
+                Timestamp = new DateTime(2002, 03, 04),
+                Exception = new InvalidOperationException("TestLoggedException"),
+                LogProperties = new Dictionary<string, object> { { "hi", "Guys" }, { "thowable", new ObjectThatThrowsAfterOneGet() } },
+                MessageTemplate = "Hello this is a message template",
+                Level = "LogLevel"
+            };
+            eventHubLog.Log(testLogEntry);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
+
+            var sentString = Encoding.UTF8.GetString(sentBytes);
+            var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
+            Assert.AreNotEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
+            Assert.AreNotEqual(testLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
+            Assert.AreNotEqual(testLogEntry.LogProperties, sentLogEntry.LogProperties);
+
+            Assert.AreNotEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreNotEqual(testLogEntry.Exception, sentLogEntry.Exception);
+
+            Assert.AreEqual("Newtonsoft.Json", sentLogEntry.Exception.Source);
+
+            Assert.AreNotEqual(testLogEntry.Level, sentLogEntry.Level);
         }
     }
 
-    public class MockLogEntry : ILogEntry
+    internal class ObjectThatThrows
     {
-        [JsonProperty("Timestamp")]
-        public DateTime Timestamp { get; set; }
-
-        [JsonProperty("Level")]
-        public string Level
+        public string Throwable
         {
-            get { throw new AbandonedMutexException("TestException"); }
+            get { throw new Exception("Thrown on throwable getter"); }
             set { }
         }
 
-        [JsonProperty("MessageTemplate")]
-        public string MessageTemplate { get; set; }
+        public string NotThrowable { get; set; } ="NotThrowing";
+    }
 
-        [JsonProperty("Properties")]
-        public Dictionary<string, object> LogProperties { get; set; }
-
-        public EventId EventId { get; set; }
-        public Exception Exception { get; set; }
+    internal class ObjectThatThrowsAfterOneGet
+    {
+        private bool hasBeenGot;
+        public string Throwable
+        {
+            get
+            {
+                if (hasBeenGot)
+                    throw new Exception("Thrown on throwable getter");
+                hasBeenGot = true;
+                return "Gotten";
+            }
+        }
     }
 }

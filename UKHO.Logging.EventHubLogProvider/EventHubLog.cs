@@ -19,6 +19,7 @@ using System;
 using System.Text;
 
 using Microsoft.Azure.EventHubs;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
@@ -40,11 +41,28 @@ namespace UKHO.Logging.EventHubLogProvider
                        };
         }
 
-        public async void Log(ILogEntry logEntry)
+        public async void Log(LogEntry logEntry)
         {
             try
             {
-                var jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                string jsonLogEntry;
+                try
+                {
+                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                }
+                catch (Exception e)
+                {
+                    logEntry = new LogEntry()
+                               {
+                                   Exception = e,
+                                   Level = "Warning",
+                                   MessageTemplate = "Log Serialization failed with exception",
+                                   Timestamp = DateTime.UtcNow,
+                                   EventId = new EventId(7437)
+                               };
+                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                }
+
                 await eventHubClientWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
             }
             catch (Exception e)

@@ -21,6 +21,6 @@ namespace UKHO.Logging.EventHubLogProvider
 {
     internal interface IEventHubLog : IDisposable
     {
-        void Log(ILogEntry logEntry);
+        void Log(LogEntry logEntry);
     }
 }

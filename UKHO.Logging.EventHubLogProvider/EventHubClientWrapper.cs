@@ -30,7 +30,7 @@ namespace UKHO.Logging.EventHubLogProvider
     }
 
     [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
-    public class EventHubClientWrapper : IEventHubClientWrapper
+    internal class EventHubClientWrapper : IEventHubClientWrapper
     {
         private EventHubClient eventHubClient;
 
