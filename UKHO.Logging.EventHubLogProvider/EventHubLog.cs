@@ -16,33 +16,28 @@
 // OF SUCH DAMAGE.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 using Microsoft.Azure.EventHubs;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
-    public class EventHubLog : IEventHubLog
+    internal class EventHubLog : IEventHubLog
     {
-        private EventHubClient eventHubClient;
+        private IEventHubClientWrapper eventHubClientWrapper;
         private readonly JsonSerializerSettings settings;
 
-        public EventHubLog(string eventHubConnectionString, string eventHubEntityPath)
+        public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
         {
-            var connectionStringBuilder = new EventHubsConnectionStringBuilder(eventHubConnectionString)
-                                          {
-                                              EntityPath = eventHubEntityPath
-                                          };
-
-            eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
+            this.eventHubClientWrapper = eventHubClientWrapper;
             settings = new JsonSerializerSettings
                        {
                            Formatting = Formatting.Indented,
-                           ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                           ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                           ContractResolver = new NullPropertyResolver()
                        };
         }
 
@@ -50,8 +45,25 @@ namespace UKHO.Logging.EventHubLogProvider
         {
             try
             {
-                var jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
-                await eventHubClient.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
+                string jsonLogEntry;
+                try
+                {
+                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                }
+                catch (Exception e)
+                {
+                    logEntry = new LogEntry()
+                               {
+                                   Exception = e,
+                                   Level = "Warning",
+                                   MessageTemplate = "Log Serialization failed with exception",
+                                   Timestamp = DateTime.UtcNow,
+                                   EventId = new EventId(7437)
+                               };
+                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                }
+
+                await eventHubClientWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
             }
             catch (Exception e)
             {
@@ -61,8 +73,8 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ReleaseUnmanagedResources()
         {
-            eventHubClient?.Close();
-            eventHubClient = null;
+            eventHubClientWrapper?.Dispose();
+            eventHubClientWrapper = null;
         }
 
         public void Dispose()

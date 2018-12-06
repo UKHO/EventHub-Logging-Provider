@@ -22,14 +22,14 @@ using Microsoft.Extensions.Logging;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    public class EventHubLoggerProvider : ILoggerProvider
+    internal class EventHubLoggerProvider : ILoggerProvider
     {
         private readonly EventHubLogProviderOptions options;
         private readonly IEventHubLog eventHubLog;
         private bool disposed;
 
-        public EventHubLoggerProvider(EventHubLogProviderOptions options,
-                                   IEventHubLog eventHubLog)
+        internal EventHubLoggerProvider(EventHubLogProviderOptions options,
+                                        IEventHubLog eventHubLog)
         {
             this.options = options;
             this.eventHubLog = eventHubLog;
@@ -64,7 +64,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
             loggerFactory.AddProvider(new EventHubLoggerProvider(options,
-                                                              new EventHubLog(options.EventHubConnectionString, options.EventHubEntityPath)));
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
             return loggerFactory;
         }
     }

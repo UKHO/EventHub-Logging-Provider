@@ -24,8 +24,8 @@ using Newtonsoft.Json;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    public class LogEntry
-    {
+
+    public class LogEntry { 
         [JsonProperty("Timestamp")]
         public DateTime Timestamp { get; set; }
 

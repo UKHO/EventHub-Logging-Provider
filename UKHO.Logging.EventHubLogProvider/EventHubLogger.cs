@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
-    public class EventHubLogger : ILogger
+    internal class EventHubLogger : ILogger
     {
         private const string OriginalFormatPropertyName = "{OriginalFormat}";
         private readonly IEventHubLog eventHubLog;
@@ -35,9 +35,9 @@ namespace UKHO.Logging.EventHubLogProvider
         private readonly string nodeName;
         private readonly Action<IDictionary<string, object>> additionalValuesProvider;
 
-        public EventHubLogger(IEventHubLog eventHubLog,
-                              string categoryName,
-                              EventHubLogProviderOptions options)
+        internal EventHubLogger(IEventHubLog eventHubLog,
+                                string categoryName,
+                                EventHubLogProviderOptions options)
         {
             this.eventHubLog = eventHubLog;
             this.categoryName = categoryName;
@@ -112,14 +112,14 @@ namespace UKHO.Logging.EventHubLogProvider
 
             var logProperties = BuildLogProperties();
             var logEntry = new LogEntry
-            {
-                Exception = exception,
-                EventId = eventId,
-                Level = logLevel.ToString(),
-                MessageTemplate = logProperties.MessageTemplate,
-                Timestamp = DateTime.UtcNow,
-                LogProperties = logProperties.logProperties
-            };
+                           {
+                               Exception = exception,
+                               EventId = eventId,
+                               Level = logLevel.ToString(),
+                               MessageTemplate = logProperties.MessageTemplate,
+                               Timestamp = DateTime.UtcNow,
+                               LogProperties = logProperties.logProperties
+                           };
             eventHubLog.Log(logEntry);
         }
 
