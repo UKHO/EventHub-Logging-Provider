@@ -26,12 +26,12 @@ namespace UKHO.Logging.EventHubLogProvider
 {
     internal class EventHubLog : IEventHubLog
     {
-        private IEventHubClientWrapper eventHubClientWrapperWrapper;
+        private IEventHubClientWrapper eventHubClientWrapper;
         private readonly JsonSerializerSettings settings;
 
-        public EventHubLog(IEventHubClientWrapper eventHubClientWrapperWrapper)
+        public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
         {
-            this.eventHubClientWrapperWrapper = eventHubClientWrapperWrapper;
+            this.eventHubClientWrapper = eventHubClientWrapper;
             settings = new JsonSerializerSettings
                        {
                            Formatting = Formatting.Indented,
@@ -45,7 +45,7 @@ namespace UKHO.Logging.EventHubLogProvider
             try
             {
                 var jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
-                await eventHubClientWrapperWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
+                await eventHubClientWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
             }
             catch (Exception e)
             {
@@ -55,8 +55,8 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ReleaseUnmanagedResources()
         {
-            eventHubClientWrapperWrapper?.Dispose();
-            eventHubClientWrapperWrapper = null;
+            eventHubClientWrapper?.Dispose();
+            eventHubClientWrapper = null;
         }
 
         public void Dispose()
