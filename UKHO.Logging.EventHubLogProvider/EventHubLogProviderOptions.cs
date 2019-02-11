@@ -37,6 +37,14 @@ namespace UKHO.Logging.EventHubLogProvider
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
 
+        /// <summary>
+        ///     If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
+        ///     connection with EventHub can't be established and validated
+        /// </summary>
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once RedundantDefaultMemberInitializer
+        public bool ValidateConnectionString { get; set; } = false;
+
         public string NodeName
         {
             get => nodeName == HashMachineName ? SystemEnvironment.MachineName : nodeName;
@@ -69,6 +77,15 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (MinimumLogLevels.ContainsKey(""))
                 throw new ArgumentException($"Parameter {nameof(MinimumLogLevels)} can not contain an empty key.", nameof(MinimumLogLevels));
+
+            if (ValidateConnectionString)
+                ValidateConnection();
+        }
+
+        private void ValidateConnection()
+        {
+            var eventHubClientWrapper = new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath);
+            eventHubClientWrapper.ValidateConnection();
         }
 
         public LogLevel GetMinimumLogLevelForCategory(string categoryName)
