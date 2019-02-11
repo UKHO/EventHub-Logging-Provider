@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2019,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -64,6 +64,18 @@ namespace UKHO.Logging.EventHubLogProvider
         public Task SendAsync(EventData eventData)
         {
             return eventHubClient.SendAsync(eventData);
+        }
+
+        public void ValidateConnection()
+        {
+            try
+            {
+                eventHubClient.GetRuntimeInformationAsync().Wait();
+            }
+            catch (AggregateException e)
+            {
+                throw new ArgumentException("The connection to EventHub failed.", e);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2019,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -66,6 +66,23 @@ namespace UKHO.Logging.EventHubLogProviderTest
                               NodeName = "Bill"
                           };
             options.Validate();
+        }
+
+        [Test]
+        public void TestValidateConnectionExplodesWithAnArgumentExceptionIfConnectionStringRubbishAndValidateConnectionStringTurnedOn()
+        {
+            var options = new EventHubLogProviderOptions
+                          {
+                              Environment = "Env",
+                              EventHubConnectionString = "Endpoint=sb://abadname-eventhubnamespace.servicebus.windows.net/;SharedAccessKeyName=logstash;SharedAccessKey=garbage=;EntityPath=eventhub",
+                              EventHubEntityPath = "Path",
+                              Service = "Service",
+                              System = "System",
+                              DefaultMinimumLogLevel = LogLevel.Critical,
+                              NodeName = "Bill",
+                              ValidateConnectionString = true
+                          };
+            Assert.Throws<ArgumentException>(() => options.Validate());
         }
 
         [Test]
