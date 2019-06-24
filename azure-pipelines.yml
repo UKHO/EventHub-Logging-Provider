@@ -20,7 +20,7 @@ steps:
 - script: dotnet restore
   displayName: Restore Packages
 
-- script: Apply-AssemblyVersionAndDefaults.ps1 -buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)"
+- script: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)"
 
 - script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c Release --no-restore
   displayName: Build Project
