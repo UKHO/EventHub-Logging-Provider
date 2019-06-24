@@ -9,10 +9,6 @@ pr:
 pool:
   name: 'NautilusBuild'
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
 
 steps:
 # - task: NuGetToolInstaller@0
@@ -24,13 +20,10 @@ steps:
 - script: dotnet restore
   displayName: Restore Packages
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- script: dotnet build **/*.sln -c Release --no-restore
+  displayName: Build Project
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+# - task: VSTest@2
+#   inputs:
+#     platform: '$(buildPlatform)'
+#     configuration: '$(buildConfiguration)'
