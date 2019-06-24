@@ -20,7 +20,7 @@ steps:
 - script: dotnet restore
   displayName: Restore Packages
 
-- script: dotnet build **/*.sln -c Release --no-restore
+- script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c Release --no-restore
   displayName: Build Project
 
 # - task: VSTest@2
