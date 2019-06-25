@@ -11,6 +11,9 @@ pool:
 
 name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
+variables:
+  ProjectVersion: 1
+
 steps:
 # - task: NuGetToolInstaller@0
 
