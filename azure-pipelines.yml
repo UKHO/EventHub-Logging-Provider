@@ -19,5 +19,5 @@ steps:
 - script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c Release --no-restore
   displayName: Build Project
 
-- script: dotnet test --no-build
+- script: dotnet test --no-build -c Release
   displayName: Test Project
