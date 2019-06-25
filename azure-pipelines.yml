@@ -9,6 +9,7 @@ pr:
 pool:
   name: 'NautilusBuild'
 
+name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 steps:
 # - task: NuGetToolInstaller@0
