@@ -1,7 +1,7 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+variables:
+  ProjectVersion: 1
+
+name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 pr:
   - master
@@ -9,27 +9,15 @@ pr:
 pool:
   name: 'NautilusBuild'
 
-name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
-
-variables:
-  ProjectVersion: 1
-
 steps:
-# - task: NuGetToolInstaller@0
-
-# - task: NuGetCommand@2
-#   inputs:
-#     restoreSolution: '$(solution)'
-
 - script: dotnet restore
   displayName: Restore Packages
 
 - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)"
+  displayName: Apply Version Number
 
 - script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c Release --no-restore
   displayName: Build Project
 
-# - task: VSTest@2
-#   inputs:
-#     platform: '$(buildPlatform)'
-#     configuration: '$(buildConfiguration)'
+- script: dotnet test --no-build
+  displayName: Test Project
