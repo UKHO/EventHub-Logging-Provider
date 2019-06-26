@@ -15,7 +15,35 @@ stages:
     pool:
       name: 'NautilusBuild'
     steps:
-    - script: echo Build
+    - script: dotnet restore
+      displayName: Restore Packages
+
+    - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
+      displayName: Apply Version Number
+
+    - script: dotnet build $(Solution) -c $(Configuration) --no-restore
+      displayName: Build Project
+
+    - script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+      displayName: Test Project
+
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
+        failTaskOnFailedTests: true
+        mergeTestResults: true
+
+      # TODO - Index Symbols?
+
+    - script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
+      displayName: Pack Project
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)
+        artifact: $(Build.DefinitionName)
+  
 - stage: deploy
   jobs:
   - deployment: publish
@@ -31,34 +59,5 @@ stages:
 
 
 
-# steps:
-# - script: dotnet restore
-#   displayName: Restore Packages
 
-# - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
-#   displayName: Apply Version Number
-
-# - script: dotnet build $(Solution) -c $(Configuration) --no-restore
-#   displayName: Build Project
-
-# - script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
-#   displayName: Test Project
-
-# - task: PublishTestResults@2
-#   inputs:
-#     testRunner: VSTest
-#     testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
-#     failTaskOnFailedTests: true
-#     mergeTestResults: true
-
-# # TODO - Index Symbols?
-
-# - script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
-#   displayName: Pack Project
-
-# - task: PublishPipelineArtifact@1
-#   inputs:
-#     path: $(Build.ArtifactStagingDirectory)
-#     artifact: $(Build.DefinitionName)
-  
 
