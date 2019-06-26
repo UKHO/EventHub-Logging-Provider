@@ -1,6 +1,7 @@
 variables:
   ProjectVersion: 1
   Configuration: Release
+  Solution: UKHO.Logging.EventHubLogProvider.sln
 
 name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -17,10 +18,10 @@ steps:
 - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
   displayName: Apply Version Number
 
-- script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c $(Configuration) --no-restore
+- script: dotnet build $(Solution) -c $(Configuration) --no-restore
   displayName: Build Project
 
-- script: dotnet test --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+- script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
   displayName: Test Project
 
 - task: PublishTestResults@2
@@ -30,7 +31,9 @@ steps:
     failTaskOnFailedTests: true
     mergeTestResults: true
 
-- script: dotnet pack UKHO.Logging.EventHubLogProvider.sln --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
+# TODO - Index Symbols?
+
+- script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
   displayName: Pack Project
 
 - task: PublishPipelineArtifact@1
@@ -39,4 +42,3 @@ steps:
     artifact: $(Build.DefinitionName)
   
 
-# TODO - Index Symbols?
