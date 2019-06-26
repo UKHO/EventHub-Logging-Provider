@@ -21,7 +21,7 @@ stages:
   - deployment: publish
     displayName: publish package
     pool:
-      vmImage: 'NautilusBuild'
+      name: NautilusBuild
     environment: live
     strategy:
       runOnce:
