@@ -30,6 +30,7 @@ steps:
     failTaskOnFailedTests: true
     mergeTestResults: true
 
-
+- script: dotnet pack --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
+  displayName: Pack Project
 
 # TODO - Index Symbols?
