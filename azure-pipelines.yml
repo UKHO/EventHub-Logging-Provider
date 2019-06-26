@@ -1,5 +1,6 @@
 variables:
   ProjectVersion: 1
+  Configuration: "Release"
 
 name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -16,8 +17,8 @@ steps:
 - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)"
   displayName: Apply Version Number
 
-- script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c Release --no-restore
+- script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c $(Configuration) --no-restore
   displayName: Build Project
 
-- script: dotnet test --no-build -c Release
+- script: dotnet test --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
   displayName: Test Project
