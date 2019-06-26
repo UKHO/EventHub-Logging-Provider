@@ -16,11 +16,19 @@ stages:
       name: 'NautilusBuild'
     steps:
     - script: echo Build
-
-# - stage: deploy
-#   jobs:
-#   - deployment: PushPackage
-#   displayName: Push Package
+- stage: deploy
+  jobs:
+  - deployment: PushPackage  
+  pool:
+    name: 'NautilusBuild'
+       # creates an environment if it doesn’t exist
+  environment: 'smarthotel-dev'
+  strategy:
+    # default deployment strategy
+    runOnce:
+      deploy:
+        steps:
+        - script: echo my first deployment
 
 
 
