@@ -8,37 +8,50 @@ name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 pr:
   - master
 
-pool:
-  name: 'NautilusBuild'
+stages:
+- stage: build
+  jobs:
+  - job: run_build
+    pool:
+      name: 'NautilusBuild'
+    steps:
+    - script: echo Build
 
-steps:
-- script: dotnet restore
-  displayName: Restore Packages
+# - stage: deploy
+#   jobs:
+#   - deployment: PushPackage
+#   displayName: Push Package
 
-- powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
-  displayName: Apply Version Number
 
-- script: dotnet build $(Solution) -c $(Configuration) --no-restore
-  displayName: Build Project
 
-- script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
-  displayName: Test Project
+# steps:
+# - script: dotnet restore
+#   displayName: Restore Packages
 
-- task: PublishTestResults@2
-  inputs:
-    testRunner: VSTest
-    testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
-    failTaskOnFailedTests: true
-    mergeTestResults: true
+# - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
+#   displayName: Apply Version Number
 
-# TODO - Index Symbols?
+# - script: dotnet build $(Solution) -c $(Configuration) --no-restore
+#   displayName: Build Project
 
-- script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
-  displayName: Pack Project
+# - script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+#   displayName: Test Project
 
-- task: PublishPipelineArtifact@1
-  inputs:
-    path: $(Build.ArtifactStagingDirectory)
-    artifact: $(Build.DefinitionName)
+# - task: PublishTestResults@2
+#   inputs:
+#     testRunner: VSTest
+#     testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
+#     failTaskOnFailedTests: true
+#     mergeTestResults: true
+
+# # TODO - Index Symbols?
+
+# - script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
+#   displayName: Pack Project
+
+# - task: PublishPipelineArtifact@1
+#   inputs:
+#     path: $(Build.ArtifactStagingDirectory)
+#     artifact: $(Build.DefinitionName)
   
 
