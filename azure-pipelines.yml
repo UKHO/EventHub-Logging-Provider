@@ -1,9 +1,9 @@
 variables:
-  ProjectVersion: 1
-  Configuration: Release
-  Solution: UKHO.Logging.EventHubLogProvider.sln
+  projectVersion: 1
+  configuration: Release
+  solution: UKHO.Logging.EventHubLogProvider.sln
 
-name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
+name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 pr:
   - master
@@ -13,7 +13,7 @@ stages:
   jobs:
   - job: run_build
     pool:
-      name: 'NautilusBuild'
+      name: NautilusBuild
     steps:
     - script: dotnet restore
       displayName: Restore Packages
@@ -21,10 +21,10 @@ stages:
     - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
       displayName: Apply Version Number
 
-    - script: dotnet build $(Solution) -c $(Configuration) --no-restore
+    - script: dotnet build $(solution) -c $(configuration) --no-restore
       displayName: Build Project
 
-    - script: dotnet test $(Solution) --no-build -c $(Configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+    - script: dotnet test $(solution) --no-build -c $(configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
       displayName: Test Project
 
     - task: PublishTestResults@2
@@ -36,7 +36,7 @@ stages:
 
       # TODO - Index Symbols?
 
-    - script: dotnet pack $(Solution) --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
+    - script: dotnet pack $(solution) --no-build -c $(configuration) -o $(Build.ArtifactStagingDirectory)
       displayName: Pack Project
 
     - task: PublishPipelineArtifact@1
