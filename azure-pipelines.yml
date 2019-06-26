@@ -1,6 +1,6 @@
 variables:
   ProjectVersion: 1
-  Configuration: "Release"
+  Configuration: Release
 
 name: $(BuildDefinitionName)_$(ProjectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -14,7 +14,7 @@ steps:
 - script: dotnet restore
   displayName: Restore Packages
 
-- powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)"
+- powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
   displayName: Apply Version Number
 
 - script: dotnet build UKHO.Logging.EventHubLogProvider.sln -c $(Configuration) --no-restore
