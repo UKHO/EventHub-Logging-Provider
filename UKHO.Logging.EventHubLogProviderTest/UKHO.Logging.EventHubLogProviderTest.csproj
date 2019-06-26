@@ -6,6 +6,10 @@
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="4.5.1" />
     <PackageReference Include="FakeItEasy.Analyzer.CSharp" Version="4.5.1" />
@@ -32,3 +36,5 @@
   </ItemGroup>
   
 </Project>
+
+<PropertyGroup></PropertyGroup>>
