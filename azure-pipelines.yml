@@ -28,3 +28,6 @@ steps:
     testRunner: VSTest
     testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
     failTaskOnFailedTests: true
+    mergeTestResults: true
+
+# TODO - Index Symbols?
