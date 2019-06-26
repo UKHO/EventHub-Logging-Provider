@@ -49,7 +49,7 @@ stages:
   - deployment: publish
     displayName: publish package
     pool:
-      name: NautilusBuild
+      name: NautilusRelease
     environment: live
     strategy:
       runOnce:
