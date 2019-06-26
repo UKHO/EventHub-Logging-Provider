@@ -33,8 +33,10 @@ steps:
 - script: dotnet pack UKHO.Logging.EventHubLogProvider.sln --no-build -c $(Configuration) -o $(Build.ArtifactStagingDirectory)
   displayName: Pack Project
 
-- publish: $(Build.ArtifactStagingDirectory)
-  artifact: $(BuildDefinitionName)
+- task: PublishPipelineArtifact@1
+  inputs:
+    path: $(Build.ArtifactStagingDirectory)
+    artifact: $(BuildDefinitionName)
   
 
 # TODO - Index Symbols?
