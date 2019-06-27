@@ -58,6 +58,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: dotnet nuget push $(Pipeline.Workspace)/**/*_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r).nupkg -k $(progetApiKey) -s $(progetFeed)
+          - script: dotnet nuget push $(Build.BuildNumber).nupkg -k $(progetApiKey) -s $(progetFeed)
             env:
               progetApiKey : $(progetApiKey)
