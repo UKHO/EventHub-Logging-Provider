@@ -55,7 +55,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo publish
+          - script: echo $(Pipeline.Workspace)
 
 
 
