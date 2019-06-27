@@ -30,6 +30,7 @@ stages:
       displayName: Test Project
 
     - task: PublishTestResults@2
+      displayName: Publish Test Results
       inputs:
         testRunner: VSTest
         testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
@@ -40,6 +41,7 @@ stages:
       displayName: Pack Project
 
     - task: PublishPipelineArtifact@1
+      displayName: Publish Pipeline Atrifact
       inputs:
         path: $(Build.ArtifactStagingDirectory)
         artifact: $(Build.DefinitionName)
