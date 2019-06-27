@@ -52,6 +52,8 @@ stages:
     displayName: publish package
     pool:
       name: NautilusRelease
+      workspace:
+        clean: all
     environment: live
     strategy:
       runOnce:
