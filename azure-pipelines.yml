@@ -2,6 +2,7 @@ variables:
   projectVersion: 1
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
+  progetFeed: https://proget.ukho.gov.uk/nuget/alm/
   
 name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -52,16 +53,11 @@ stages:
     displayName: publish package
     pool:
       name: NautilusRelease
-      workspace:
-        clean: all
     environment: live
     strategy:
       runOnce:
         deploy:
           steps:
-          - script: echo $(Pipeline.Workspace)
-
-
-
-
-
+          - script: dotnet nuget push $(Pipeline.Workspace)/**/*_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r).nupkg -k $(progetApiKey) -s $(progetFeed)
+            env:
+              progetApiKey : $(progetApiKey)
