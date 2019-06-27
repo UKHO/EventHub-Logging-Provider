@@ -36,12 +36,6 @@ stages:
         failTaskOnFailedTests: true
         mergeTestResults: true
 
-    - task: PublishSymbols@2
-      inputs:
-        SearchPattern: '**\bin\**\*.pdb'
-        IndexSources: true
-        PublishSymbols: false
-
     - script: dotnet pack $(solution) --no-build -c $(configuration) -o $(Build.ArtifactStagingDirectory)
       displayName: Pack Project
 
