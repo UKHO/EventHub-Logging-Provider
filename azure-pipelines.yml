@@ -2,7 +2,7 @@ variables:
   projectVersion: 1
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
-
+  
 name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 pr:
@@ -14,6 +14,8 @@ stages:
   - job: run_build
     pool:
       name: NautilusBuild
+    workspace:
+      clean: all
     steps:
     - script: dotnet restore
       displayName: Restore Packages
@@ -34,7 +36,7 @@ stages:
         failTaskOnFailedTests: true
         mergeTestResults: true
 
-      # TODO - Index Symbols?
+    # TODO - Index Symbols?
 
     - script: dotnet pack $(solution) --no-build -c $(configuration) -o $(Build.ArtifactStagingDirectory)
       displayName: Pack Project
@@ -50,12 +52,14 @@ stages:
     displayName: publish package
     pool:
       name: NautilusRelease
+    workspace:
+      clean: all
     environment: live
     strategy:
       runOnce:
         deploy:
           steps:
-          - script: set
+          - script: echo $(Pipeline.Workspace)
 
 
 
