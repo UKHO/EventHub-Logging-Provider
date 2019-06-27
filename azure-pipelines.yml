@@ -6,8 +6,7 @@ variables:
   
 name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
-pr:
-  - master
+trigger: none
 
 stages:
 - stage: build
@@ -37,7 +36,10 @@ stages:
         failTaskOnFailedTests: true
         mergeTestResults: true
 
-    # TODO - Index Symbols?
+    - task: PublishSymbols@2
+      inputs:
+        SearchPattern: '**\bin\**\*.pdb'
+        IndexSources: true       
 
     - script: dotnet pack $(solution) --no-build -c $(configuration) -o $(Build.ArtifactStagingDirectory)
       displayName: Pack Project
