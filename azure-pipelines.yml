@@ -2,7 +2,7 @@ variables:
   projectVersion: 1
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
-  progetFeed: https://proget.ukho.gov.uk/nuget/alm/
+  progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
   
 name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -61,3 +61,4 @@ stages:
           - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
             env:
               progetApiKey : $(progetApiKey)
+            displayName: Publish Package
