@@ -1,0 +1,63 @@
+variables:
+  projectVersion: 1
+  configuration: Release
+  solution: UKHO.Logging.EventHubLogProvider.sln
+  progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
+  
+name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
+
+trigger: none
+
+stages:
+- stage: build
+  jobs:
+  - job: run_build
+    pool:
+      name: NautilusBuild
+    workspace:
+      clean: all
+    steps:
+    - script: dotnet restore
+      displayName: Restore Packages
+
+    - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
+      displayName: Apply Version Number
+
+    - script: dotnet build $(solution) -c $(configuration) --no-restore
+      displayName: Build Project
+
+    - script: dotnet test $(solution) --no-build -c $(configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+      displayName: Test Project
+
+    - task: PublishTestResults@2
+      displayName: Publish Test Results
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '$(Agent.BuildDirectory)/TestResults/*.trx'
+        failTaskOnFailedTests: true
+        mergeTestResults: true
+
+    - script: dotnet pack $(solution) --no-build -c $(configuration) -o $(Build.ArtifactStagingDirectory)
+      displayName: Pack Project
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Pipeline Atrifact
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)
+        artifact: $(Build.DefinitionName)
+  
+- stage: deploy
+  jobs:
+  - deployment: publish
+    displayName: publish package
+    pool:
+      name: NautilusRelease
+    environment: live
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
+            env:
+              progetApiKey : $(progetApiKey)
+            displayName: Publish Package
