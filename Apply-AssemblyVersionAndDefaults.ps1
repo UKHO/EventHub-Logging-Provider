@@ -18,7 +18,7 @@ $versionToApply = "$buildRevisionNumber"
 
 $assemblyValues = @{
 	"Company" = "UK Hydrographic Office";
-	"Copyright" = "Copyright © UK Hydrographic Office 2018";
+	"Copyright" = "Copyright © UK Hydrographic Office 2020";
 	"Description" = "UKHO.Logging.EventHubLogProvider";
 	"Product" = "UKHO.Logging.EventHubLogProvider";
 	"AssemblyVersion" = $versionToApply;
