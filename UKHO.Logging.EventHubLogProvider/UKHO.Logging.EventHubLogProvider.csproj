@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <PackageProjectUrl>https://github.com/UKHO/EventHub-Logging-Provider</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/UKHO/licences/blob/master/ukho-int/licence.md</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>UK Hydrographic Office</Authors>
     <Company>UK Hydrographic Office</Company>
     <Description>Log provider for Microsoft.Extensions.Logging to log to Azure EventHub</Description>
