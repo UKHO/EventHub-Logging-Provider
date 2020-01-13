@@ -8,7 +8,7 @@ The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.
 
 This package is available from NuGet: UKHO.Logging.EventHubLogProvider
 
-```
+```bash
     nuget install UKHO.Logging.EventHubLogProvider
 ```
 
