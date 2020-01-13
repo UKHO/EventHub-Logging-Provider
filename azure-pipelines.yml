@@ -48,7 +48,7 @@ stages:
   
 - stage: deploy
   jobs:
-  - deployment: Publish To ProGet
+  - deployment: Publish_To_ProGet
     displayName: Publish To ProGet
     pool:
       name: NautilusRelease
@@ -61,7 +61,7 @@ stages:
             env:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
-  - deployment: Publish To NuGet
+  - deployment: Publish_To_NuGet
     displayName: Publish To NuGet
     pool:
       name: NautilusRelease
