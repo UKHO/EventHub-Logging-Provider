@@ -70,7 +70,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json
+          - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols
             env:
               nugetApiKey : $(nugetApiKey)
             displayName: Publish Package
