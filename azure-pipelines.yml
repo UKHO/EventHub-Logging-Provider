@@ -48,11 +48,11 @@ stages:
   
 - stage: deploy
   jobs:
-  - deployment: publish
-    displayName: publish package
+  - deployment: Publish To ProGet
+    displayName: Publish To ProGet
     pool:
       name: NautilusRelease
-    environment: live
+    environment: EventHubLogProvider-ProGet
     strategy:
       runOnce:
         deploy:
@@ -60,4 +60,17 @@ stages:
           - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
             env:
               progetApiKey : $(progetApiKey)
+            displayName: Publish Package
+  - deployment: Publish To NuGet
+    displayName: Publish To NuGet
+    pool:
+      name: NautilusRelease
+    environment: EventHubLogProvider-NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey)
+            env:
+              nugetApiKey : $(nugetApiKey)
             displayName: Publish Package
