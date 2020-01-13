@@ -46,7 +46,7 @@ stages:
         path: $(Build.ArtifactStagingDirectory)
         artifact: $(Build.DefinitionName)
   
-- stage: Deploy To Proget
+- stage: Proget
   jobs:
   - deployment: Publish_To_ProGet
     displayName: Publish To ProGet
@@ -62,7 +62,7 @@ stages:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
             
-- stage: Deploy To Nuget
+- stage: Nuget
   jobs:
     - deployment: Publish_To_NuGet
       displayName: Publish To NuGet
