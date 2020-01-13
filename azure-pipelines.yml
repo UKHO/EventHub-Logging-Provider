@@ -63,7 +63,7 @@ stages:
             displayName: Publish Package
             
 - stage: Nuget
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
     - deployment: Publish_To_NuGet
       displayName: Publish To NuGet
