@@ -46,13 +46,13 @@ stages:
         path: $(Build.ArtifactStagingDirectory)
         artifact: $(Build.DefinitionName)
   
-- stage: deploy
+- stage: Proget
   jobs:
-  - deployment: publish
-    displayName: publish package
+  - deployment: Publish_To_ProGet
+    displayName: Publish To ProGet
     pool:
       name: NautilusRelease
-    environment: live
+    environment: EventHubLogProvider-ProGet
     strategy:
       runOnce:
         deploy:
@@ -61,3 +61,20 @@ stages:
             env:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
+            
+- stage: Nuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+    - deployment: Publish_To_NuGet
+      displayName: Publish To NuGet
+      pool:
+        name: NautilusRelease
+      environment: EventHubLogProvider-NuGet
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true
+              env:
+                nugetApiKey : $(nugetApiKey)
+              displayName: Publish Package
