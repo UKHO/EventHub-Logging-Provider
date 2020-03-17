@@ -67,5 +67,16 @@ namespace UKHO.Logging.EventHubLogProvider
                                                                  new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
             return loggerFactory;
         }
+
+        [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<EventHubLogProviderOptions> config)
+        {
+            var options = new EventHubLogProviderOptions();
+            config(options);
+            options.Validate();
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(options,
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
+            return loggingBuilder;
+        }
     }
 }
