@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FakeItEasy;
-using Microsoft.Azure.EventHubs;
+using Azure.Messaging.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,12 +33,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
     internal class EventHubLogTests
     {
         [Test]
-        public void TestHandelsHandelsCircularReferencesCorrectly()
+        public void TestHandlesCircularReferencesCorrectly()
         {
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry
@@ -72,7 +72,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry
@@ -103,7 +103,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry
@@ -139,7 +139,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry

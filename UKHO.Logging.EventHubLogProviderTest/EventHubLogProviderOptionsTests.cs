@@ -35,7 +35,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
             var parameterNames = "EventHubConnectionString,EventHubEntityPath,Environment,System,Service";
             Assert.AreEqual(parameterNames, argumentException.ParamName);
-            Assert.AreEqual($"Parameters {parameterNames} must be set to a valid value.{Environment.NewLine}Parameter name: {parameterNames}", argumentException.Message);
+            Assert.AreEqual($"Parameters {parameterNames} must be set to a valid value. (Parameter '{parameterNames}')", argumentException.Message);
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                           };
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
             Assert.AreEqual("MinimumLogLevels", argumentException.ParamName);
-            Assert.AreEqual($"Parameter MinimumLogLevels can not contain an empty key.{Environment.NewLine}Parameter name: MinimumLogLevels", argumentException.Message);
+            Assert.AreEqual($"Parameter MinimumLogLevels can not contain an empty key. (Parameter 'MinimumLogLevels')", argumentException.Message);
         }
 
         [Test]
@@ -116,7 +116,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                           };
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
             Assert.AreEqual("AdditionalValuesProvider", argumentException.ParamName);
-            Assert.AreEqual($"Parameters AdditionalValuesProvider must be set to a valid value.{Environment.NewLine}Parameter name: AdditionalValuesProvider",
+            Assert.AreEqual($"Parameters AdditionalValuesProvider must be set to a valid value. (Parameter 'AdditionalValuesProvider')",
                             argumentException.Message);
         }
 
@@ -135,7 +135,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                           };
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
             Assert.AreEqual("NodeName", argumentException.ParamName);
-            Assert.AreEqual($"Parameters NodeName must be set to a valid value.{Environment.NewLine}Parameter name: NodeName", argumentException.Message);
+            Assert.AreEqual($"Parameters NodeName must be set to a valid value. (Parameter 'NodeName')", argumentException.Message);
         }
 
         [Test]

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Azure.Storage.Blobs;
 using FakeItEasy;
-using Microsoft.Azure.EventHubs;
+using Azure.Messaging.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -166,7 +166,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
             var template = GenerateTestMessage(1024 * 1024);
             var eventHubLog = new EventHubLog(fakeEventHubClient);
 
@@ -210,7 +210,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
             string template = null;
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry
@@ -256,7 +256,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
             var template = GenerateTestMessage(1024 * 512);
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry
