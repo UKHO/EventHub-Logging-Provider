@@ -39,20 +39,11 @@ namespace UKHO.Logging.EventHubLogProvider
         public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath)
         {
             eventHubClient = new EventHubProducerClient(eventHubConnectionString, eventHubEntityPath);
-            //TODO: fixed!
-            //var connectionStringBuilder = new EventHubsConnectionStringBuilder(eventHubConnectionString)
-            //                              {
-            //                                  EntityPath = eventHubEntityPath
-            //                              };
-
-            //eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
         }
 
         private void ReleaseUnmanagedResources()
         {
             eventHubClient.CloseAsync().Wait();
-            //TODO: fixed!
-            //eventHubClient?.Close();
             eventHubClient = null;
         }
 
@@ -70,8 +61,6 @@ namespace UKHO.Logging.EventHubLogProvider
         public Task SendAsync(EventData eventData)
         {
             return eventHubClient.SendAsync(new List<EventData>{ eventData });
-            //TODO: fixed!
-            //return eventHubClient.SendAsync(eventData);
         }
 
         public void ValidateConnection()
@@ -79,8 +68,6 @@ namespace UKHO.Logging.EventHubLogProvider
             try
             {
                 eventHubClient.GetPartitionIdsAsync().Wait();
-                //TODO: fixed!
-                //eventHubClient.GetRuntimeInformationAsync().Wait();
             }
             catch (AggregateException e)
             {
