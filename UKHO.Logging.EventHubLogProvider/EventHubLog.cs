@@ -18,7 +18,7 @@
 using System;
 using System.Text;
 
-using Microsoft.Azure.EventHubs;
+using Azure.Messaging.EventHubs;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
