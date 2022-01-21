@@ -51,6 +51,9 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+ 
+
+
             (Dictionary<string, object> logProperties, string MessageTemplate) BuildLogProperties()
             {
                 var result = new Dictionary<string, object>

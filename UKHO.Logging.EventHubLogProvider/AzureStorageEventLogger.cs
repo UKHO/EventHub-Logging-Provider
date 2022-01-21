@@ -22,20 +22,29 @@ namespace UKHO.Logging.EventHubLogProvider
         }
 
         /// <summary>
+        /// Generates the service name for the container subfolder
+        /// </summary>
+        /// <param name="serviceName">The service name</param>
+        /// <param name="environment">The environment</param>
+        /// <returns>the service name(string)</returns>
+        public string GenerateServiceName(string serviceName,string environment)
+        {
+            return string.Format("{0} - {1}", serviceName, environment);
+        }
+
+        /// <summary>
         /// Generates a path for the error message blob
         /// </summary>
-        /// <param name="subscriptionName">The subscription name</param>
         /// <param name="date">The datetime</param>
         /// <returns>The blob path</returns>
-        public string GeneratePathForErrorBlob(string subscriptionName, DateTime date)
+        public string GeneratePathForErrorBlob(DateTime date)
         {
-            return Path.Combine(subscriptionName
-                                ,date.Year.ToString()
+            return Path.Combine( date.Year.ToString()
                                 ,date.Month.ToString()
                                 , date.Day.ToString()
                                 , date.Hour.ToString()
                                 , date.Minute.ToString()
-                                , date.Minute.ToString());
+                                , date.Second.ToString());
         }
 
         /// <summary>
@@ -44,7 +53,7 @@ namespace UKHO.Logging.EventHubLogProvider
         /// <param name="name">The name of the blob</param>
         /// <param name="extension">The extension</param>
         /// <returns>The blob name(with extension)</returns>
-        public string GenerateErrorBlobName(Nullable<Guid> name , string extension)
+        public string GenerateErrorBlobName(Nullable<Guid> name = null, string extension = null)
         {
             string blobName;
             if (name == null)
@@ -58,14 +67,26 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (string.IsNullOrEmpty(extension))
             {
-                blobName += String.Format("{0}{1}{2}",blobName,".","txt");
+                blobName += String.Format("{0}{1}",".","txt");
             }
             else
             {
-                blobName += String.Format("{0}{1}{2}", blobName, ".", extension);
+                blobName += String.Format("{0}{1}", ".", extension);
             }
 
             return blobName;
+        }
+
+        /// <summary>
+        /// Generates the full name for the blob
+        /// </summary>
+        /// <param name="serviceName">The service name (ess etc)</param>
+        /// <param name="path">The path (date based)</param>
+        /// <param name="blobName">The blob name</param>
+        /// <returns>The fullname of the blob (path + name)</returns>
+        public string GenerateBlobFullName(string serviceName, string path, string blobName)
+        {
+            return Path.Combine(serviceName,path,blobName);
         }
 
         public void SetUpContainerClient()
@@ -85,6 +106,8 @@ namespace UKHO.Logging.EventHubLogProvider
              
             bool isStored = false;
             BinaryData binaryData = new BinaryData(model.Data); 
+
+
             var uploadBlobResponse = this._containerClient.UploadBlob(model.FileFullName, binaryData);
 
             if(uploadBlobResponse.Value != null)

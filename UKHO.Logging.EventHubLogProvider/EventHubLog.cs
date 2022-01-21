@@ -22,6 +22,7 @@ using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using UKHO.Logging.EventHubLogProvider.Extensions;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
@@ -43,6 +44,8 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public async void Log(LogEntry logEntry)
         {
+
+ 
             try
             {
                 string jsonLogEntry;
@@ -62,6 +65,38 @@ namespace UKHO.Logging.EventHubLogProvider
                                };
                     jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
                 }
+
+                if (jsonLogEntry.IsLongMessage(1))
+                {
+
+                    var azureLogger = new AzureStorageEventLogger();
+                    object service = null;
+                    object environment = null;
+                    logEntry.LogProperties.TryGetValue("_Service", out service);
+                    logEntry.LogProperties.TryGetValue("_Environment", out environment);
+                    string blobFullName = azureLogger.GenerateBlobFullName(azureLogger.GenerateServiceName(service.ToString(), environment.ToString()),
+                                                                           azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
+                                                                           azureLogger.GenerateErrorBlobName());
+                    var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
+                    azureLogger.StoreLogFile(azureStorageModel);
+                    var azureException = new Exception($"A blob created at {blobFullName}"); 
+                    jsonLogEntry = JsonConvert.SerializeObject(new LogEntry()
+                                                               {
+                                                                    Exception = azureException,
+                                                                    Level = logEntry.Level,
+                                                                    MessageTemplate = $"A blob created at {blobFullName}",
+                                                                    Timestamp = logEntry.Timestamp,
+                                                                    EventId = logEntry.EventId,
+                                                                    LogProperties = logEntry.LogProperties
+                                                                    
+
+
+                                                               }, settings); 
+                }
+
+                 
+               
+      
 
                 await eventHubClientWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));
             }
