@@ -285,5 +285,13 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                           MinimumLogLevels = { { "UKHO", ukhoLogLevel } }
                                       });
         }
+
+        [Test]
+        public void TestAzureSTorage()
+        {
+            var azureLogger = new AzureStorageEventLogger();
+            var azureStorageModel = new AzureStorageEventModel("aaa.txt", "ssadasdasdasdasdasdasdasdasdasdasd");
+            azureLogger.StoreLogFile(azureStorageModel);
+        }
     }
 }
