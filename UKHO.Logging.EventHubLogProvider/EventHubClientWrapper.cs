@@ -21,20 +21,26 @@ using System.Threading.Tasks;
 
 using Microsoft.Azure.EventHubs;
 
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+
 namespace UKHO.Logging.EventHubLogProvider
 {
     //Wrapper for the external library so we can test things.
     internal interface IEventHubClientWrapper : IDisposable
     {
         Task SendAsync(EventData eventData);
+
+        AzureStorageLogProviderOptions azureStorageLogProviderOptions { get; set; }
     }
 
     [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
     internal class EventHubClientWrapper : IEventHubClientWrapper
     {
         private EventHubClient eventHubClient;
+        public AzureStorageLogProviderOptions azureStorageLogProviderOptions { get; set; }
 
-        public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath)
+        public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath, AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
             var connectionStringBuilder = new EventHubsConnectionStringBuilder(eventHubConnectionString)
                                           {
@@ -42,6 +48,7 @@ namespace UKHO.Logging.EventHubLogProvider
                                           };
 
             eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
+            this.azureStorageLogProviderOptions = azureStorageLogProviderOptions;
         }
 
         private void ReleaseUnmanagedResources()

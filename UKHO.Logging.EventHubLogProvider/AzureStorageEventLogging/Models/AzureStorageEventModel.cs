@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UKHO.Logging.EventHubLogProvider
+namespace UKHO.Logging.AzureStorageEventLogging.Models
 {
     public class AzureStorageEventModel
     {

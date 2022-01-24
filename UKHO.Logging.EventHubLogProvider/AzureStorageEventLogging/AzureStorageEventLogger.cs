@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using UKHO.Logging.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.Settings;
 
-namespace UKHO.Logging.EventHubLogProvider
+namespace UKHO.Logging.AzureStorageEventLogging
 {
     public class AzureStorageEventLogger
     {
@@ -17,8 +19,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public AzureStorageEventLogger()
         {
-            this._appSettings = new AppSettings();
-            SetUpContainerClient();
+            this._appSettings = new AppSettings(); 
         }
 
         /// <summary>

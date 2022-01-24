@@ -287,18 +287,6 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                       });
         }
 
-        [Test]
-        public void TestAzureSTorage()
-        {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
-            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", 
-                                                          fakeEventHubLog, d => d["AdditionalData"] = "NewData");
-            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
-            Assert.AreEqual("NewData", loggedEntry.LogProperties["AdditionalData"]);
-
-
-            
-        }
+        
     }
 }

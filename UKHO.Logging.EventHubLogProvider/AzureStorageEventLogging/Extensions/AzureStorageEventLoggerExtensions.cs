@@ -5,7 +5,7 @@ using System.Text;
 using  System.IO;
 using System.Threading.Tasks;
 
-namespace UKHO.Logging.EventHubLogProvider.Extensions
+namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
 {
     public static class AzureStorageEventLoggerExtensions
     {

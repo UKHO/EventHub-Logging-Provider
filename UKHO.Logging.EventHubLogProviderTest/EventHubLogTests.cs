@@ -30,7 +30,10 @@ using Newtonsoft.Json.Linq;
 
 using NUnit.Framework;
 
+using UKHO.Logging.AzureStorageEventLogging;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProviderTest
 {
@@ -154,10 +157,17 @@ namespace UKHO.Logging.EventHubLogProviderTest
                 EventId = new EventId(2),
                 Timestamp = new DateTime(2002, 03, 04),
                 Exception = new InvalidOperationException("TestLoggedException"),
-                LogProperties = new Dictionary<string, object> { { "hi", "Guys" }, { "thowable", new ObjectThatThrowsAfterOneGet() } },
+                LogProperties = new Dictionary<string, object> { { "hi", "Guys" }, { "throwable", new ObjectThatThrowsAfterOneGet() } },
                 MessageTemplate = "Hello this is a message template",
                 Level = "LogLevel"
             };
+            string json = JsonConvert.SerializeObject(testLogEntry, new JsonSerializerSettings
+                                                                    {
+                                                                        Formatting = Formatting.Indented,
+                                                                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                                                                        ContractResolver = new NullPropertyResolver()
+                                                                    }); 
+            bool isMoreThan1mb = json.IsLongMessage(1);
             eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 
@@ -220,7 +230,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             DateTime testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
-
+            
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry()
             {

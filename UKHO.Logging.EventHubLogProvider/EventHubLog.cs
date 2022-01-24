@@ -22,7 +22,11 @@ using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
-using UKHO.Logging.EventHubLogProvider.Extensions;
+
+using UKHO.Logging.AzureStorageEventLogging;
+using UKHO.Logging.AzureStorageEventLogging.Models;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
@@ -30,6 +34,7 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         private IEventHubClientWrapper eventHubClientWrapper;
         private readonly JsonSerializerSettings settings;
+        private readonly AzureStorageLogProviderOptions azureStorageLogProviderOptions;
 
         public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
         {
@@ -40,6 +45,7 @@ namespace UKHO.Logging.EventHubLogProvider
                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                            ContractResolver = new NullPropertyResolver()
                        };
+            this.azureStorageLogProviderOptions = (AzureStorageLogProviderOptions)eventHubClientWrapper.azureStorageLogProviderOptions;
         }
 
         public async void Log(LogEntry logEntry)
