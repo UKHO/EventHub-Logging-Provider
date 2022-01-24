@@ -34,7 +34,7 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         private IEventHubClientWrapper eventHubClientWrapper;
         private readonly JsonSerializerSettings settings;
-        private readonly AzureStorageLogProviderOptions azureStorageLogProviderOptions;
+        private readonly AzureStorageBlobContainerBuilder azureStorageBlobContainerBuilder;
 
         public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
         {
@@ -45,7 +45,7 @@ namespace UKHO.Logging.EventHubLogProvider
                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                            ContractResolver = new NullPropertyResolver()
                        };
-            this.azureStorageLogProviderOptions = (AzureStorageLogProviderOptions)eventHubClientWrapper.azureStorageLogProviderOptions;
+            this.azureStorageBlobContainerBuilder = eventHubClientWrapper.AzureStorageBlobContainerBuilder;
         }
 
         public async void Log(LogEntry logEntry)
@@ -72,17 +72,18 @@ namespace UKHO.Logging.EventHubLogProvider
                     jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
                 }
 
-                if (jsonLogEntry.IsLongMessage(1))
+            
+
+                if (this.azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry,2))
                 {
 
-                    var azureLogger = new AzureStorageEventLogger();
-                    object service = null;
-                    object environment = null;
-                    logEntry.LogProperties.TryGetValue("_Service", out service);
-                    logEntry.LogProperties.TryGetValue("_Environment", out environment);
-                    string blobFullName = azureLogger.GenerateBlobFullName(azureLogger.GenerateServiceName(service.ToString(), environment.ToString()),
-                                                                           azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
-                                                                           azureLogger.GenerateErrorBlobName());
+                    var azureLogger = new AzureStorageEventLogger(this.azureStorageBlobContainerBuilder.BlobContainerClient);
+                    string blobFullName = azureLogger.GenerateBlobFullName(
+                                                                           new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(
+                                                                                                              logEntry.LogProperties.GetLogEntryPropertyValue("_Service"),
+                                                                                                              logEntry.LogProperties.GetLogEntryPropertyValue("_Environment")),
+                                                                                                             azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
+                                                                                                             azureLogger.GenerateErrorBlobName()));
                     var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
                     azureLogger.StoreLogFile(azureStorageModel);
                     var azureException = new Exception($"A blob created at {blobFullName}"); 

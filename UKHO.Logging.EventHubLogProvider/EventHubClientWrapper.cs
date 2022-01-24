@@ -31,14 +31,14 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         Task SendAsync(EventData eventData);
 
-        AzureStorageLogProviderOptions azureStorageLogProviderOptions { get; set; }
+        AzureStorageBlobContainerBuilder AzureStorageBlobContainerBuilder { get; set; }
     }
 
     [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
     internal class EventHubClientWrapper : IEventHubClientWrapper
     {
         private EventHubClient eventHubClient;
-        public AzureStorageLogProviderOptions azureStorageLogProviderOptions { get; set; }
+        public AzureStorageBlobContainerBuilder AzureStorageBlobContainerBuilder { get; set; }
 
         public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath, AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
@@ -48,7 +48,9 @@ namespace UKHO.Logging.EventHubLogProvider
                                           };
 
             eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
-            this.azureStorageLogProviderOptions = azureStorageLogProviderOptions;
+            var azureStorageBlobContainerBuilder = new AzureStorageBlobContainerBuilder(azureStorageLogProviderOptions);
+            azureStorageBlobContainerBuilder.Build();
+            this.AzureStorageBlobContainerBuilder = azureStorageBlobContainerBuilder;
         }
 
         private void ReleaseUnmanagedResources()

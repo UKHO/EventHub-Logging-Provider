@@ -5,6 +5,8 @@ using System.Text;
 using  System.IO;
 using System.Threading.Tasks;
 
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
 {
     public static class AzureStorageEventLoggerExtensions
@@ -22,6 +24,29 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
             return (messageSize >= (mbs * (1024^2)));
  
 
+        }
+
+        public static bool NeedsAzureStorageLogging(this AzureStorageBlobContainerBuilder builderModel,string message,int mbs)
+        {
+            
+
+            if( builderModel.AzureStorageLogProviderOptions != null && (builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled) &&  IsLongMessage(message, mbs))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        public static string GetLogEntryPropertyValue(this Dictionary<string,object> set,string key)
+        {
+            object value;
+            bool keyExists = set.TryGetValue("_Service", out value);
+
+            return ((keyExists == true & value != null ) ? value.ToString() : null );
         }
     }
 }

@@ -7,19 +7,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 using UKHO.Logging.AzureStorageEventLogging.Models;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.Settings;
+using System.Net;
+using System.Threading;
 
 namespace UKHO.Logging.AzureStorageEventLogging
 {
     public class AzureStorageEventLogger
     {
         private BlobContainerClient _containerClient;
+        private CancellationToken _cancellationToken;
 
-        private AppSettings _appSettings;
-
-        public AzureStorageEventLogger()
+        public AzureStorageEventLogger(BlobContainerClient containerClient)
         {
-            this._appSettings = new AppSettings(); 
+            this._containerClient = containerClient;
+            this._cancellationToken = new CancellationToken();
         }
 
         /// <summary>
@@ -81,42 +84,40 @@ namespace UKHO.Logging.AzureStorageEventLogging
         /// <summary>
         /// Generates the full name for the blob
         /// </summary>
-        /// <param name="serviceName">The service name (ess etc)</param>
-        /// <param name="path">The path (date based)</param>
-        /// <param name="blobName">The blob name</param>
+        /// <param name="storageBlobFullNameModel">The blob full name model</param>
         /// <returns>The fullname of the blob (path + name)</returns>
-        public string GenerateBlobFullName(string serviceName, string path, string blobName)
+        public string GenerateBlobFullName(AzureStorageBlobFullNameModel storageBlobFullNameModel)
         {
-            return Path.Combine(serviceName,path,blobName);
+            return Path.Combine(storageBlobFullNameModel.ServiceName, storageBlobFullNameModel.Path, storageBlobFullNameModel.BlobName);
         }
 
-        public void SetUpContainerClient()
+        public void CancelLogFileStoringOperation()
         {
-            Uri uri = new Uri(this._appSettings.AzureStorageContainerSasUrl);
+          
+        }
+ 
 
-
-
-
-            this._containerClient = new BlobContainerClient(uri );
-
-            bool k = this._containerClient.CanGenerateSasUri;
-        } 
-
-        public bool StoreLogFile(AzureStorageEventModel model)
+        public AzureStorageEventLogResult StoreLogFile(AzureStorageEventModel model,bool withCancellation = false)
         {
              
             bool isStored = false;
             BinaryData binaryData = new BinaryData(model.Data); 
 
 
-            var uploadBlobResponse = this._containerClient.UploadBlob(model.FileFullName, binaryData);
-
-            if(uploadBlobResponse.Value != null)
+            var uploadBlobResponse = this._containerClient.UploadBlob(model.FileFullName, binaryData, this._cancellationToken);
+ 
+            if (uploadBlobResponse.Value != null )
             {
-                isStored = true;
+                if (uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created 
+                    & uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString())
+                {
+                    isStored = true;
+                }
+               
             }
 
-            return isStored;
+            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
+                                                  uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber,isStored,model.FileFullName );
         }
     }
 }
