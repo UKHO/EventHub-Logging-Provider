@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -31,17 +32,18 @@ namespace UKHO.Logging.EventHubLogProviderTest
     [TestFixture]
     class AzureStorageEventLoggerTests
     {
+        private BlobContainerClient _blobContainerClient;
         [SetUp]
         public void SetUp()
         {
-
+            this._blobContainerClient = A.Dummy<BlobContainerClient>();
         }
 
         [Test]
         public void TestAZS()
         {
-            var appSettings = new AppSettings();
-            var blobClient = new BlobContainerClient(new Uri(appSettings.AzureStorageContainerSasUrl));
+            var options = new AzureStorageLogProviderOptions(AppSettings.GetSetting("Logs.Queue.Container.SasUrl"),true);
+            var blobClient = new BlobContainerClient(new Uri(AppSettings.GetSetting("Logs.Queue.Container.SasUrl")));
             var azureModel = new AzureStorageEventLogger(blobClient);
             string blobFullName = azureModel.GenerateBlobFullName(
                                                                   new AzureStorageBlobFullNameModel(azureModel.GenerateServiceName(
@@ -49,46 +51,90 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                                     azureModel.GeneratePathForErrorBlob(DateTime.Now),
                                                                                                     azureModel.GenerateErrorBlobName()));
             var azureStorageModel = new AzureStorageEventModel(blobFullName, this.GenerateTestMessage(1024 * 1024));
+
             var azureStorageResult = azureModel.StoreLogFile(azureStorageModel);
+            string template = (azureStorageResult.IsStored ? options.SuccessfulMessageTemplate :
+                options.FailedMessageTemplate);
+            string resultMessage = azureStorageResult.ToLogMessage(options,template);
         }
-
-        [Test]
-        public void TestAzureSTorage()
+        public void TestEventHubLogFMessageCancellation()
         {
-            var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
+           
+            var blobClient = new BlobContainerClient(new Uri(AppSettings.GetSetting("Logs.Queue.Container.SasUrl")));
+            var azureModel = new AzureStorageEventLogger(blobClient);
+            string blobFullName = azureModel.GenerateBlobFullName(
+                                                                  new AzureStorageBlobFullNameModel(azureModel.GenerateServiceName(
+                                                                                                     "ees", "dev"),
+                                                                                                    azureModel.GeneratePathForErrorBlob(DateTime.Now),
+                                                                                                    azureModel.GenerateErrorBlobName()));
+            var azureStorageModel = new AzureStorageEventModel(blobFullName, this.GenerateTestMessage((1024 * 1024 * 15)));
+             
+            var azureStorageResult = azureModel.StoreLogFile(azureStorageModel,true);
+            var res = azureModel.CancelLogFileStoringOperation();
+        }
+        #region string builders
+        [Test]
+        public void TestGenerateServiceName()
+        {
+            var azureStorageLogger = new AzureStorageEventLogger(this._blobContainerClient);
+            string serviceName = "testService";
+            String environment = "testEnvironment";
+            string result = azureStorageLogger.GenerateServiceName(serviceName,environment);
+            string expected = String.Format("{0} - {1}", serviceName, environment);
+            Assert.AreEqual(expected, result);
+        }
+        [Test]
+        public void TestGeneratePathForErrorBlob()
+        {
+            var azureStorageLogger = new AzureStorageEventLogger(this._blobContainerClient);
+            DateTime dt = new DateTime(2021,12,10,12,13,14);
+                //DateTime.Parse("2020-12-10 12:13:14");
+            string result = azureStorageLogger.GeneratePathForErrorBlob(dt);
+            string expected = "2021\\12\\10\\12\\13\\14";
+            Assert.AreEqual(expected, result);
+        }
+        [Test]
+        public void TestGenerateErrorBlobName_WithGuidOnly()
+        {
+            var azureStorageLogger = new AzureStorageEventLogger(this._blobContainerClient);
+            Guid name = Guid.NewGuid();
+            string result = azureStorageLogger.GenerateErrorBlobName(name);
+            string expected = string.Format("{0}.{1}",name.ToString().Replace("-", "_"), "txt");
+            Assert.AreEqual(expected,result);
 
-            byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+        }
+        [Test]
+        public void TestGenerateErrorBlobName_WithGuidAndExtension()
+        {
+            var azureStorageLogger = new AzureStorageEventLogger(this._blobContainerClient);
+            Guid name = Guid.NewGuid();
+            string extension = "json";
+            string result = azureStorageLogger.GenerateErrorBlobName(name,extension);
+            string expected = string.Format("{0}.{1}", name.ToString().Replace("-", "_"), extension);
+            Assert.AreEqual(expected, result);
 
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
-            var testLogEntry = new LogEntry()
-            {
-                EventId = new EventId(2),
-                Timestamp = new DateTime(2002, 03, 04),
-                Exception = new InvalidOperationException("TestLoggedException"),
-                LogProperties = new Dictionary<string, object> { { "_Service", "ees" }, { "_Environment", "dev" } },
-                MessageTemplate = "Hello this is a message template",
-                Level = "LogLevel"
-            };
-            eventHubLog.Log(testLogEntry);
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
-
-            var sentString = Encoding.UTF8.GetString(sentBytes);
-            var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
-            Assert.AreNotEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
-            Assert.AreNotEqual(testLogEntry.MessageTemplate, sentLogEntry.MessageTemplate);
-            Assert.AreNotEqual(testLogEntry.LogProperties, sentLogEntry.LogProperties);
-
-            Assert.AreNotEqual(testLogEntry.EventId, sentLogEntry.EventId);
-            Assert.AreNotEqual(testLogEntry.Exception, sentLogEntry.Exception);
-
-            Assert.AreEqual("Newtonsoft.Json", sentLogEntry.Exception.Source);
-
-            Assert.AreNotEqual(testLogEntry.Level, sentLogEntry.Level);
+        }
+        [Test]
+        public void TestGenerateBlobFullName()
+        {
+            var azureStorageLogger = new AzureStorageEventLogger(this._blobContainerClient);
+            Guid name = Guid.NewGuid();
+            string extension = "txt";
+            string serviceName = "testService";
+            string path = "2021\\12\\10\\12\\13\\14";
+            string blobName = string.Format("{0}.{1}", name.ToString().Replace("-", "_"), extension);
+            var azureSotrageBlobModel = new AzureStorageBlobFullNameModel(serviceName,path,blobName);
+            string result = azureStorageLogger.GenerateBlobFullName(azureSotrageBlobModel);
+            string expected = Path.Combine(serviceName,path,blobName);
+            Assert.AreEqual(expected,result);
         }
 
+
+        #endregion
+
+        #region StoreMessage
         [Test]
-        public void TestEventHubLogForMessagesEqualTo1MB()
+        public void TestEventHubLogForMessagesGreaterTo1MB()
         {
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
             string service = "test service";
@@ -99,6 +145,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
             var template = this.GenerateTestMessage(1024 * 1024);
             var eventHubLog = new EventHubLog(fakeEventHubClient);
+
             var testLogEntry = new LogEntry()
             {
                 EventId = new EventId(2),
@@ -131,9 +178,56 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                    azureLogger.GenerateErrorBlobName()));
 
             Assert.AreEqual(testLogEntry.MessageTemplate, template);
-            Assert.AreEqual(sentLogEntry.Exception.Message, "TestLoggedException");
+            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("A blob was created"));
         }
+        [Test]
+        public void TestEventHubLogForMessagesEqualTo1MB()
+        {
+            var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
+            string service = "test service";
+            string environment = "test environment";
+            var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
+            DateTime testDateStamp = new DateTime(2002, 03, 04);
+            byte[] sentBytes = null;
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            string template = null;
+            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var testLogEntry = new LogEntry()
+            {
+                EventId = new EventId(2),
+                Timestamp = testDateStamp,
+                Exception = new InvalidOperationException("TestLoggedException"),
+                LogProperties = testLogProperties,
+                MessageTemplate = string.Empty,  //find the size of the rest of the object so that we can create it exactly 1 mb
+                Level = "LogLevel"
+            };
+            template = CreateMessageEqualTo1MB(testLogEntry);
+            testLogEntry.MessageTemplate = template;
+            eventHubLog.Log(testLogEntry);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 
+            var sentString = Encoding.UTF8.GetString(sentBytes);
+            var sentLogEntry = JsonConvert.DeserializeObject<LogEntry>(sentString);
+
+            Assert.AreEqual(testLogEntry.Timestamp, sentLogEntry.Timestamp);
+            CollectionAssert.AreEqual(testLogEntry.LogProperties, sentLogEntry.LogProperties);
+            Assert.AreEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
+            Assert.AreEqual(2, sentLogEntry.LogProperties.Count);
+            Assert.AreEqual(testLogEntry.LogProperties.First(), sentLogEntry.LogProperties.First());
+
+            Assert.AreEqual(testLogEntry.EventId, sentLogEntry.EventId);
+            Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
+
+            AzureStorageEventLogger azureLogger = new AzureStorageEventLogger(fakeEventHubClient.AzureStorageBlobContainerBuilder.BlobContainerClient);
+
+            string blobFullName = azureLogger.GenerateBlobFullName(new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(service, environment),
+                                                                   azureLogger.GeneratePathForErrorBlob(testDateStamp),
+                                                                   azureLogger.GenerateErrorBlobName()));
+
+            Assert.AreEqual(testLogEntry.MessageTemplate, template);
+            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("A blob was created"));
+        }
         [Test]
         public void TestEventHubLogForMessagesLessThan1MB()
         {
@@ -144,7 +238,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             DateTime testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
-            var template = this.GenerateTestMessage(1024 * 1024);
+            var template = this.GenerateTestMessage(1024 * 512);
             var eventHubLog = new EventHubLog(fakeEventHubClient);
             var testLogEntry = new LogEntry()
             {
@@ -178,9 +272,10 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                                      azureLogger.GenerateErrorBlobName()));
 
             Assert.AreEqual(sentLogEntry.MessageTemplate, template);
-            Assert.AreEqual(sentLogEntry.Exception.Message, "TestLoggedException");
+            Assert.AreEqual(testLogEntry.Exception.Message, sentLogEntry.Exception.Message);
         }
-
+        #endregion
+        #region help functions
         /// <summary>
         /// Generates a test string message
         /// </summary>
@@ -200,5 +295,32 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             return new String(charsArray);
         }
+
+        /// <summary>
+        /// Returns the size of the entry model when using the EventHub Log serialization settings
+        /// </summary>
+        /// <param name="entry">The entry</param>
+        /// <returns>The size of the message</returns>
+        private int GetSizeOfJsonObject(LogEntry entry)
+        {
+            return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entry, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new NullPropertyResolver()
+            })).Length;
+        }
+
+        /// <summary>
+        /// Calculates the message template and creates so that the total size of the json as 1 MB
+        /// </summary>
+        /// <param name="entry">The entry model</param>
+        /// <returns>The message template</returns>
+        private String CreateMessageEqualTo1MB(LogEntry entry)
+        {
+            return GenerateTestMessage((1024 * 1024) - GetSizeOfJsonObject(entry));
+
+        }
+        #endregion
     }
 }

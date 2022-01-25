@@ -166,13 +166,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
                 MessageTemplate = "Hello this is a message template",
                 Level = "LogLevel"
             };
-            string json = JsonConvert.SerializeObject(testLogEntry, new JsonSerializerSettings
-                                                                    {
-                                                                        Formatting = Formatting.Indented,
-                                                                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                                                                        ContractResolver = new NullPropertyResolver()
-                                                                    }); 
-            bool isMoreThan1mb = json.IsLongMessage(1);
+ 
+
             eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
 

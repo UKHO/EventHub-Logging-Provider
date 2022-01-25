@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 using Azure.Storage.Blobs;
 
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
+
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
 {
-    public class AzureStorageBlobContainerBuilder
+    public class AzureStorageBlobContainerBuilder : IAzureStorageBlobContainerBuilder
     {
         public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; private set; }
         public BlobContainerClient BlobContainerClient { get; private set; }

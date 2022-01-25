@@ -14,7 +14,7 @@ namespace UKHO.Logging.EventHubLogProviderTest.Factories
     {
         protected override AzureStorageBlobContainerBuilder Create()
         {
-          return new AzureStorageBlobContainerBuilder(A.Fake<AzureStorageLogProviderOptions>(),A.Fake<BlobContainerClient>());
+          return new AzureStorageBlobContainerBuilder(A.Dummy<AzureStorageLogProviderOptions>(),A.Fake<BlobContainerClient>());
              
         }
 

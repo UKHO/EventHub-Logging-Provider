@@ -74,7 +74,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
             
 
-                if (this.azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry,2))
+                if (this.azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry,1))
                 {
 
                     var azureLogger = new AzureStorageEventLogger(this.azureStorageBlobContainerBuilder.BlobContainerClient);
@@ -85,20 +85,9 @@ namespace UKHO.Logging.EventHubLogProvider
                                                                                                              azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
                                                                                                              azureLogger.GenerateErrorBlobName()));
                     var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
-                    azureLogger.StoreLogFile(azureStorageModel);
-                    var azureException = new Exception($"A blob created at {blobFullName}"); 
-                    jsonLogEntry = JsonConvert.SerializeObject(new LogEntry()
-                                                               {
-                                                                    Exception = azureException,
-                                                                    Level = logEntry.Level,
-                                                                    MessageTemplate = $"A blob created at {blobFullName}",
-                                                                    Timestamp = logEntry.Timestamp,
-                                                                    EventId = logEntry.EventId,
-                                                                    LogProperties = logEntry.LogProperties
-                                                                    
-
-
-                                                               }, settings); 
+                    var result =  azureLogger.StoreLogFile(azureStorageModel);
+ 
+                    jsonLogEntry = result.ToJsonLogEntryString(this.azureStorageBlobContainerBuilder.AzureStorageLogProviderOptions, logEntry,settings);
                 }
 
                  

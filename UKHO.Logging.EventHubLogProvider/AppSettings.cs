@@ -13,21 +13,12 @@ namespace UKHO.Logging.EventHubLogProvider.Settings
         public class AppSettings
         {
 
-            public string AzureStorageContainerSasUrl { get; private set; }
-            
-            /// <summary>
-            /// The constructor
-            /// </summary> 
-            public AppSettings()
-            { 
-                this.AzureStorageContainerSasUrl = this.GetSetting("Logs.Queue.Container.SasUrl");
-            }
             /// <summary>
             /// Returns the setting's value for the supplied key
             /// </summary>
             /// <param name="key">The key</param>
             /// <returns>The value</returns>
-            public string GetSetting(string key)
+            public static string GetSetting(string key)
             {
                 return ConfigurationManager.AppSettings.Get(key);
             }

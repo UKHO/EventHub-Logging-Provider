@@ -11,14 +11,16 @@ using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.Settings;
 using System.Net;
 using System.Threading;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.AzureStorageEventLogging
 {
-    public class AzureStorageEventLogger
+    public class AzureStorageEventLogger : IAzureStorageEventLogger
     {
         private BlobContainerClient _containerClient;
         private CancellationToken _cancellationToken;
-
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         public AzureStorageEventLogger(BlobContainerClient containerClient)
         {
             this._containerClient = containerClient;
@@ -91,9 +93,28 @@ namespace UKHO.Logging.AzureStorageEventLogging
             return Path.Combine(storageBlobFullNameModel.ServiceName, storageBlobFullNameModel.Path, storageBlobFullNameModel.BlobName);
         }
 
-        public void CancelLogFileStoringOperation()
+        /// <summary>
+        /// Cancels the storing operation (when possible)
+        /// </summary>
+        /// <returns>AzureStorageEventLogCancellationResult</returns>
+        public AzureStorageEventLogCancellationResult CancelLogFileStoringOperation()
         {
-          
+            if (this._cancellationToken.CanBeCanceled == true)
+            {
+                try
+                {
+                    this.cancellationTokenSource.Cancel();
+                    return AzureStorageEventLogCancellationResult.Successful;
+                }
+                catch (Exception ex)
+                {
+                    return AzureStorageEventLogCancellationResult.CancellationFailed;
+                }
+            }
+            else
+            {
+                return AzureStorageEventLogCancellationResult.UnableToCancel;
+            }
         }
  
 
@@ -101,7 +122,12 @@ namespace UKHO.Logging.AzureStorageEventLogging
         {
              
             bool isStored = false;
-            BinaryData binaryData = new BinaryData(model.Data); 
+            BinaryData binaryData = new BinaryData(model.Data);
+
+            if(withCancellation == true)
+            {
+                this._cancellationToken = this.cancellationTokenSource.Token;
+            }
 
 
             var uploadBlobResponse = this._containerClient.UploadBlob(model.FileFullName, binaryData, this._cancellationToken);
@@ -118,6 +144,35 @@ namespace UKHO.Logging.AzureStorageEventLogging
 
             return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
                                                   uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber,isStored,model.FileFullName );
+        }
+
+
+        public async Task<AzureStorageEventLogResult> StoreLogFileAsync(AzureStorageEventModel model, bool withCancellation = false)
+        {
+
+            bool isStored = false;
+            BinaryData binaryData = new BinaryData(model.Data);
+
+            if (withCancellation == true)
+            {
+                this._cancellationToken = this.cancellationTokenSource.Token;
+            }
+
+
+            var uploadBlobResponse = await this._containerClient.UploadBlobAsync(model.FileFullName, binaryData, this._cancellationToken);
+
+            if (uploadBlobResponse.Value != null)
+            {
+                if (uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created
+                    & uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString())
+                {
+                    isStored = true;
+                }
+
+            }
+
+            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
+                                                  uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber, isStored, model.FileFullName);
         }
     }
 }
