@@ -174,5 +174,7 @@ namespace UKHO.Logging.AzureStorageEventLogging
             return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
                                                   uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber, isStored, model.FileFullName);
         }
+
+
     }
 }

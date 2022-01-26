@@ -32,12 +32,22 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             this.AzureStorageContainerSasUrlString = azureStorageContainerSasUrlString;
 
 
-            if(this.AzureStorageLoggerEnabled == true & String.IsNullOrEmpty(this.AzureStorageContainerSasUrlString))
+            if(this.AzureStorageLoggerEnabled == true )
             {
-                throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
+                if(String.IsNullOrEmpty(this.AzureStorageContainerSasUrlString))
+                {
+                    throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
+                }
+                else
+                {
+                    this.AzureStorageContainerSasUrl = this.ValidateSasUrl(azureStorageContainerSasUrlString);
+                }
+                 
             }
-  
-            string f= AppSettings.GetSetting(String.Format("{0}.{1}", "AzureStorage", nameof(SuccessfulMessageTemplate)));
+
+
+            
+
             this.SuccessfulMessageTemplate = AppSettings.GetSetting(String.Format("{0}.{1}","AzureStorage",nameof(SuccessfulMessageTemplate)));
             this.FailedMessageTemplate = AppSettings.GetSetting(String.Format("{0}.{1}", "AzureStorage", nameof(FailedMessageTemplate)));
         }
@@ -54,12 +64,18 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             this.AzureStorageContainerSasUrlString = azureStorageContainerSasUrlString;
 
 
-            if (this.AzureStorageLoggerEnabled == true & String.IsNullOrEmpty(this.AzureStorageContainerSasUrlString))
+            if (this.AzureStorageLoggerEnabled == true)
             {
-                throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
-            }
+                if (String.IsNullOrEmpty(this.AzureStorageContainerSasUrlString))
+                {
+                    throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
+                }
+                else
+                {
+                    this.AzureStorageContainerSasUrl = this.ValidateSasUrl(azureStorageContainerSasUrlString);
+                }
 
-            this.AzureStorageContainerSasUrl = this.ValidateSasUrl(azureStorageContainerSasUrlString);
+            }
 
             this.SuccessfulMessageTemplate = ( (string.IsNullOrEmpty(successfulMessageTemplate) | string.IsNullOrWhiteSpace(successfulMessageTemplate)) ?
                 throw new NullReferenceException("The successful message template cannot be null.empty or whitespace") : successfulMessageTemplate );

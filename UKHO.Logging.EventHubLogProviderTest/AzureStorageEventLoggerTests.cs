@@ -39,7 +39,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             this._blobContainerClient = A.Dummy<BlobContainerClient>();
         }
 
-        [Test]
+       
         public void TestAZS()
         {
             var options = new AzureStorageLogProviderOptions(AppSettings.GetSetting("Logs.Queue.Container.SasUrl"),true);
@@ -177,8 +177,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                    azureLogger.GeneratePathForErrorBlob(testDateStamp),
                                                                    azureLogger.GenerateErrorBlobName()));
 
-            Assert.AreEqual(testLogEntry.MessageTemplate, template);
-            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("A blob was created"));
+            Assert.IsTrue(sentLogEntry.MessageTemplate.StartsWith("Azure Storage Logging:"));
+            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("Azure Storage Logging:"));
         }
         [Test]
         public void TestEventHubLogForMessagesEqualTo1MB()
@@ -225,8 +225,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                    azureLogger.GeneratePathForErrorBlob(testDateStamp),
                                                                    azureLogger.GenerateErrorBlobName()));
 
-            Assert.AreEqual(testLogEntry.MessageTemplate, template);
-            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("A blob was created"));
+            Assert.IsTrue(sentLogEntry.MessageTemplate.StartsWith("Azure Storage Logging:"));
+            Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("Azure Storage Logging:"));
         }
         [Test]
         public void TestEventHubLogForMessagesLessThan1MB()

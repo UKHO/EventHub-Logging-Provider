@@ -85,7 +85,7 @@ namespace UKHO.Logging.EventHubLogProvider
                                                                                                              azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
                                                                                                              azureLogger.GenerateErrorBlobName()));
                     var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
-                    var result =  azureLogger.StoreLogFile(azureStorageModel);
+                    var result = await  azureLogger.StoreLogFileAsync(azureStorageModel);
  
                     jsonLogEntry = result.ToJsonLogEntryString(this.azureStorageBlobContainerBuilder.AzureStorageLogProviderOptions, logEntry,settings);
                 }
