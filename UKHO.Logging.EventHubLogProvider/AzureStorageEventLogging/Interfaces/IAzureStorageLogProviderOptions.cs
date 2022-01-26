@@ -15,9 +15,39 @@
 // IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 // OF SUCH DAMAGE.
 
+using System;
+
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
 {
+    /// <summary>
+    /// The azure storage log provider options interface
+    /// </summary>
     public interface IAzureStorageLogProviderOptions
     {
+        /// <summary>
+        ///     The azure storage sas url string
+        /// </summary>
+        string AzureStorageContainerSasUrlString { get; }
+
+        /// <summary>
+        ///     Enable the azure storage functionality
+        /// </summary>
+        bool AzureStorageLoggerEnabled { get; }
+
+        /// <summary>
+        ///     The azure storage uri model
+        /// </summary>
+        Uri AzureStorageContainerSasUrl { get; }
+
+        /// <summary>
+        ///     The azure storage result successful template
+        /// </summary>
+        string SuccessfulMessageTemplate { get; }
+
+        /// <summary>
+        ///     The azure storage result failed template
+        /// </summary>
+        string FailedMessageTemplate { get; }
+
     }
 }

@@ -1,90 +1,75 @@
-﻿using Azure.Storage.Blobs;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using UKHO.Logging.AzureStorageEventLogging.Models;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
-using UKHO.Logging.EventHubLogProvider.Settings;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
+
+using Azure.Storage.Blobs;
+
+using UKHO.Logging.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.AzureStorageEventLogging
 {
     public class AzureStorageEventLogger : IAzureStorageEventLogger
     {
-        private BlobContainerClient _containerClient;
+        private readonly BlobContainerClient _containerClient;
+        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _cancellationToken;
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
         public AzureStorageEventLogger(BlobContainerClient containerClient)
         {
-            this._containerClient = containerClient;
-            this._cancellationToken = new CancellationToken();
+            _containerClient = containerClient;
+            _cancellationToken = new CancellationToken();
         }
 
         /// <summary>
-        /// Generates the service name for the container subfolder
+        ///     Generates the service name for the container subfolder
         /// </summary>
         /// <param name="serviceName">The service name</param>
         /// <param name="environment">The environment</param>
         /// <returns>the service name(string)</returns>
-        public string GenerateServiceName(string serviceName,string environment)
+        public string GenerateServiceName(string serviceName, string environment)
         {
             return string.Format("{0} - {1}", serviceName, environment);
         }
 
         /// <summary>
-        /// Generates a path for the error message blob
+        ///     Generates a path for the error message blob
         /// </summary>
         /// <param name="date">The datetime</param>
         /// <returns>The blob path</returns>
         public string GeneratePathForErrorBlob(DateTime date)
         {
-            return Path.Combine( date.Year.ToString()
-                                ,date.Month.ToString()
-                                , date.Day.ToString()
-                                , date.Hour.ToString()
-                                , date.Minute.ToString()
-                                , date.Second.ToString());
+            return Path.Combine(date.Year.ToString(), date.Month.ToString(), date.Day.ToString(), date.Hour.ToString(), date.Minute.ToString(), date.Second.ToString());
         }
 
         /// <summary>
-        /// Generates a new blob name
+        ///     Generates a new blob name
         /// </summary>
         /// <param name="name">The name of the blob</param>
         /// <param name="extension">The extension</param>
         /// <returns>The blob name(with extension)</returns>
-        public string GenerateErrorBlobName(Nullable<Guid> name = null, string extension = null)
+        public string GenerateErrorBlobName(Guid? name = null, string extension = null)
         {
             string blobName;
             if (name == null)
-            {
                 blobName = Guid.NewGuid().ToString().Replace("-", "_");
-            }
             else
-            {
                 blobName = name.ToString().Replace("-", "_");
-            }
 
             if (string.IsNullOrEmpty(extension))
-            {
-                blobName += String.Format("{0}{1}",".","txt");
-            }
+                blobName += string.Format("{0}{1}", ".", "txt");
             else
-            {
-                blobName += String.Format("{0}{1}", ".", extension);
-            }
+                blobName += string.Format("{0}{1}", ".", extension);
 
             return blobName;
         }
 
         /// <summary>
-        /// Generates the full name for the blob
+        ///     Generates the full name for the blob
         /// </summary>
         /// <param name="storageBlobFullNameModel">The blob full name model</param>
         /// <returns>The fullname of the blob (path + name)</returns>
@@ -94,87 +79,81 @@ namespace UKHO.Logging.AzureStorageEventLogging
         }
 
         /// <summary>
-        /// Cancels the storing operation (when possible)
+        ///     Cancels the storing operation (when possible)
         /// </summary>
         /// <returns>AzureStorageEventLogCancellationResult</returns>
         public AzureStorageEventLogCancellationResult CancelLogFileStoringOperation()
         {
-            if (this._cancellationToken.CanBeCanceled == true)
-            {
+            if (_cancellationToken.CanBeCanceled)
                 try
                 {
-                    this.cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Cancel();
                     return AzureStorageEventLogCancellationResult.Successful;
                 }
                 catch (Exception ex)
                 {
                     return AzureStorageEventLogCancellationResult.CancellationFailed;
                 }
-            }
-            else
-            {
-                return AzureStorageEventLogCancellationResult.UnableToCancel;
-            }
-        }
- 
 
-        public AzureStorageEventLogResult StoreLogFile(AzureStorageEventModel model,bool withCancellation = false)
-        {
-             
-            bool isStored = false;
-            BinaryData binaryData = new BinaryData(model.Data);
-
-            if(withCancellation == true)
-            {
-                this._cancellationToken = this.cancellationTokenSource.Token;
-            }
-
-
-            var uploadBlobResponse = this._containerClient.UploadBlob(model.FileFullName, binaryData, this._cancellationToken);
- 
-            if (uploadBlobResponse.Value != null )
-            {
-                if (uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created 
-                    & uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString())
-                {
-                    isStored = true;
-                }
-               
-            }
-
-            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
-                                                  uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber,isStored,model.FileFullName );
+            return AzureStorageEventLogCancellationResult.UnableToCancel;
         }
 
-
-        public async Task<AzureStorageEventLogResult> StoreLogFileAsync(AzureStorageEventModel model, bool withCancellation = false)
+        /// <summary>
+        ///     Stores the log file on Azure
+        /// </summary>
+        /// <param name="model">The azure storage event model</param>
+        /// <param name="withCancellation">Flag for the cancellation token</param>
+        /// <returns>The azure storage log result</returns>
+        public AzureStorageEventLogResult StoreLogFile(AzureStorageEventModel model, bool withCancellation = false)
         {
+            var isStored = false;
+            var binaryData = new BinaryData(model.Data);
 
-            bool isStored = false;
-            BinaryData binaryData = new BinaryData(model.Data);
+            if (withCancellation)
+                _cancellationToken = cancellationTokenSource.Token;
 
-            if (withCancellation == true)
-            {
-                this._cancellationToken = this.cancellationTokenSource.Token;
-            }
-
-
-            var uploadBlobResponse = await this._containerClient.UploadBlobAsync(model.FileFullName, binaryData, this._cancellationToken);
+            var uploadBlobResponse = _containerClient.UploadBlob(model.FileFullName, binaryData, _cancellationToken);
 
             if (uploadBlobResponse.Value != null)
-            {
-                if (uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created
-                    & uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString())
-                {
+                if ((uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created)
+                    & (uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString()))
                     isStored = true;
-                }
 
-            }
-
-            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase, uploadBlobResponse.GetRawResponse().Status,
-                                                  uploadBlobResponse.GetRawResponse().ClientRequestId, uploadBlobResponse.Value.BlobSequenceNumber, isStored, model.FileFullName);
+            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase,
+                                                  uploadBlobResponse.GetRawResponse().Status,
+                                                  uploadBlobResponse.GetRawResponse().ClientRequestId,
+                                                  uploadBlobResponse.Value.BlobSequenceNumber,
+                                                  isStored,
+                                                  model.FileFullName);
         }
 
+        /// <summary>
+        ///     Stores the log file on Azure(Async)
+        /// </summary>
+        /// <param name="model">The azure storage event model</param>
+        /// <param name="withCancellation">Flag for the cancellation token</param>
+        /// <returns>The azure storage log result(Task)</returns>
+        public async Task<AzureStorageEventLogResult> StoreLogFileAsync(AzureStorageEventModel model, bool withCancellation = false)
+        {
+            var isStored = false;
+            var binaryData = new BinaryData(model.Data);
 
+            if (withCancellation)
+                _cancellationToken = cancellationTokenSource.Token;
+
+            var uploadBlobResponse = await _containerClient.UploadBlobAsync(model.FileFullName, binaryData, _cancellationToken);
+
+            if (uploadBlobResponse.Value != null)
+                if ((uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created)
+                    & (uploadBlobResponse.GetRawResponse().ReasonPhrase == HttpStatusCode.Created.ToString()))
+                    isStored = true;
+
+            return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase,
+                                                  uploadBlobResponse.GetRawResponse().Status,
+                                                  uploadBlobResponse.GetRawResponse().ClientRequestId,
+                                                  uploadBlobResponse.Value.BlobSequenceNumber,
+                                                  isStored,
+                                                  model.FileFullName);
+        }
     }
 }

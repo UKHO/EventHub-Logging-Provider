@@ -1,38 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Azure.Storage.Blobs;
+﻿using Azure.Storage.Blobs;
 
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
 {
+    /// <summary>
+    ///     The Azure storage blob container builder model
+    /// </summary>
     public class AzureStorageBlobContainerBuilder : IAzureStorageBlobContainerBuilder
     {
-        public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; private set; }
-        public BlobContainerClient BlobContainerClient { get; private set; }
-
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="azureStorageLogProviderOptions">The log provider options</param>
         public AzureStorageBlobContainerBuilder(AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
-            this.AzureStorageLogProviderOptions = azureStorageLogProviderOptions;
-             
-        }
-        public AzureStorageBlobContainerBuilder(AzureStorageLogProviderOptions azureStorageLogProviderOptions, BlobContainerClient blobContainerClient)
-        {
-            this.AzureStorageLogProviderOptions = azureStorageLogProviderOptions;
-            this.BlobContainerClient = blobContainerClient;
+            AzureStorageLogProviderOptions = azureStorageLogProviderOptions;
         }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="azureStorageLogProviderOptions">The log provider options</param>
+        /// <param name="blobContainerClient">The blob client</param>
+        public AzureStorageBlobContainerBuilder(AzureStorageLogProviderOptions azureStorageLogProviderOptions, BlobContainerClient blobContainerClient)
+        {
+            AzureStorageLogProviderOptions = azureStorageLogProviderOptions;
+            BlobContainerClient = blobContainerClient;
+        }
+
+        public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; }
+        public BlobContainerClient BlobContainerClient { get; private set; }
+
+        /// <summary>
+        ///     Builds the blob client
+        /// </summary>
         public void Build()
         {
-            if(this.AzureStorageLogProviderOptions != null)
-            {
-                this.BlobContainerClient = new BlobContainerClient(this.AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
-            }
+            if (AzureStorageLogProviderOptions != null)
+                BlobContainerClient = new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
         }
- 
     }
 }

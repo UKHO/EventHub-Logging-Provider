@@ -16,16 +16,28 @@
 // OF SUCH DAMAGE.
 
 using Azure.Storage.Blobs;
-
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
 {
+    /// <summary>
+    ///     The Azure storage blob container builder interface
+    /// </summary>
     public interface IAzureStorageBlobContainerBuilder
     {
+        /// <summary>
+        ///     The azure storage log provider options
+        /// </summary>
         AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; }
+
+        /// <summary>
+        ///     The blob container client
+        /// </summary>
         BlobContainerClient BlobContainerClient { get; }
 
+        /// <summary>
+        ///     The build method
+        /// </summary>
         void Build();
     }
 }

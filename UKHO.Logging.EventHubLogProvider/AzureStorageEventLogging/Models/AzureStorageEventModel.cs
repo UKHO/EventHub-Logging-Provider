@@ -4,14 +4,18 @@ namespace UKHO.Logging.AzureStorageEventLogging.Models
 {
     public class AzureStorageEventModel
     {
-        public string Data { get; private set; }
-        public string FileFullName { get; private set; } 
-
+        /// <summary>
+        ///     The default constructor
+        /// </summary>
+        /// <param name="fileFullName">The file full name</param>
+        /// <param name="data" The data ( string)></param>
         public AzureStorageEventModel(string fileFullName, string data)
         {
-             
-            this.FileFullName = (string.IsNullOrEmpty(fileFullName) ? throw new NullReferenceException(nameof(this.FileFullName)) : fileFullName);
-            this.Data = (string.IsNullOrEmpty(data) ? throw new NullReferenceException(nameof(this.Data)) : data);
+            FileFullName = string.IsNullOrEmpty(fileFullName) ? throw new NullReferenceException(nameof(FileFullName)) : fileFullName;
+            Data = string.IsNullOrEmpty(data) ? throw new NullReferenceException(nameof(Data)) : data;
         }
+
+        public string Data { get; private set; }
+        public string FileFullName { get; private set; }
     }
 }
