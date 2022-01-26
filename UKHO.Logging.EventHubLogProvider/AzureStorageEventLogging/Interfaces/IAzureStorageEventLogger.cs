@@ -16,6 +16,7 @@
 // OF SUCH DAMAGE.
 
 using System;
+using System.Threading.Tasks;
 using UKHO.Logging.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
@@ -77,6 +78,6 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
         /// <param name="model">The azure storage event model</param>
         /// <param name="withCancellation">The flag for the cancellation token</param>
         /// <returns>The store result(Async)</returns>
-        AzureStorageEventLogResult StoreLogFileAsync(AzureStorageEventModel model, bool withCancellation = false);
+        Task<AzureStorageEventLogResult> StoreLogFileAsync(AzureStorageEventModel model, bool withCancellation = false);
     }
 }

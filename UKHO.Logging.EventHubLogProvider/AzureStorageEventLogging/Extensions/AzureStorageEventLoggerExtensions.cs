@@ -69,6 +69,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
             var logMessage = azureStorageLogResult.ToLogMessage(azureStorageLogProviderOptions, template);
             existingLogEntry.MessageTemplate = template;
             existingLogEntry.Exception = new Exception(logMessage);
+            existingLogEntry.LogProperties = null;
             return JsonConvert.SerializeObject(existingLogEntry, jsonSettings);
         }
 
