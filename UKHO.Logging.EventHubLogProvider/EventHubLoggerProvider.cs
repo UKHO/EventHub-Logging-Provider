@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace UKHO.Logging.EventHubLogProvider
@@ -76,6 +77,21 @@ namespace UKHO.Logging.EventHubLogProvider
             options.Validate();
             loggingBuilder.AddProvider(new EventHubLoggerProvider(options,
                                                                  new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
+            return loggingBuilder;
+        }
+
+        [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<IServiceProvider, EventHubLogProviderOptions> config)
+        {
+            loggingBuilder.Services.AddSingleton<ILoggerProvider>(sp =>
+                                                                  {
+                                                                      var options = new EventHubLogProviderOptions();
+                                                                      config(sp, options);
+                                                                      options.Validate();
+                                                                      return new EventHubLoggerProvider(options,
+                                                                                                  new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString,
+                                                                                                                   options.EventHubEntityPath)));
+                                                                  });
             return loggingBuilder;
         }
     }
