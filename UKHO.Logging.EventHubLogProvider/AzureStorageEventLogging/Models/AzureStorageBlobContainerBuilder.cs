@@ -37,7 +37,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         public void Build()
         {
-            if (AzureStorageLogProviderOptions != null)
+            if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.AzureStorageLoggerEnabled == true)
                 BlobContainerClient = new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
         }
     }

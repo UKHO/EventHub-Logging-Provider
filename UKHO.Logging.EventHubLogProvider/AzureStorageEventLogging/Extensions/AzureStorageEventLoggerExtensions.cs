@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Azure;
 using Newtonsoft.Json;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
@@ -30,9 +31,12 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
         /// <param name="message">The message</param>
         /// <param name="mbs">The size(MBs)</param>
         /// <returns>True if logging is necessary</returns>
-        public static bool NeedsAzureStorageLogging(this AzureStorageBlobContainerBuilder builderModel, string message, int mbs)
+        public static bool NeedsAzureStorageLogging(this AzureStorageBlobContainerBuilder builderModel,
+                                                    string message,
+                                                    int mbs)
         {
-            if (builderModel != null && builderModel.AzureStorageLogProviderOptions != null && builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled
+            if (builderModel != null && builderModel.AzureStorageLogProviderOptions != null &&
+                builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled
                 && IsLongMessage(message, mbs))
                 return true;
             return false;
@@ -79,9 +83,12 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
         /// <param name="azureStorageLogResult">The azure storage result </param>
         /// <param name="azureStorageLogProviderOptions">The azure storage provider options</param>
         /// <returns></returns>
-        public static string ToMessageTemplate(this AzureStorageEventLogResult azureStorageLogResult, AzureStorageLogProviderOptions azureStorageLogProviderOptions)
+        public static string ToMessageTemplate(this AzureStorageEventLogResult azureStorageLogResult,
+                                               AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
-            return azureStorageLogResult.IsStored ? azureStorageLogProviderOptions.SuccessfulMessageTemplate : azureStorageLogProviderOptions.FailedMessageTemplate;
+            return azureStorageLogResult.IsStored
+                ? azureStorageLogProviderOptions.SuccessfulMessageTemplate
+                : azureStorageLogProviderOptions.FailedMessageTemplate;
         }
 
         /// <summary>
@@ -91,7 +98,9 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
         /// <param name="azureStorageLogProviderOptions">The azure storage log provider options</param>
         /// <param name="template">The template</param>
         /// <returns>The azure storage log message</returns>
-        public static string ToLogMessage(this AzureStorageEventLogResult azureStorageLogResult, AzureStorageLogProviderOptions azureStorageLogProviderOptions, string template)
+        public static string ToLogMessage(this AzureStorageEventLogResult azureStorageLogResult,
+                                          AzureStorageLogProviderOptions azureStorageLogProviderOptions,
+                                          string template)
         {
             var sb = new StringBuilder(template);
 
@@ -104,6 +113,40 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        ///     Gets the file size from the headers
+        /// </summary>
+        /// <param name="response">The azure response</param>
+        /// <param name="fileSize">The data size</param>
+        /// <returns>The data size</returns>
+        public static int GetFileSize(this Response response, int fileSize)
+        {
+            if (response == null || response.ContentStream == null || response.ContentStream.CanRead == false)
+                return fileSize;
+
+            response.Headers.TryGetValue("Content-Length", out var contentLength);
+
+            if (contentLength == null)
+                return fileSize;
+
+            return Convert.ToInt32(contentLength) == 0 ? fileSize : Convert.ToInt32(contentLength);
+        }
+
+        /// <summary>
+        ///     Gets the modified date for the uploaded file
+        /// </summary>
+        /// <param name="response">The azure response</param>
+        /// <returns>The blob modified date</returns>
+        public static DateTime? GetModifiedDate(this Response response)
+        {
+            if (response == null || response.ContentStream == null || response.ContentStream.CanRead == false)
+                return null;
+
+            response.Headers.TryGetValue("Date", out var date);
+
+            return date == null ? null : (DateTime?)DateTime.Parse(date);
         }
     }
 }

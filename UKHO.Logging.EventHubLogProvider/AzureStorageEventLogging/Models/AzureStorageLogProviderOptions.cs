@@ -1,6 +1,5 @@
 ﻿using System;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
-using UKHO.Logging.EventHubLogProvider.Settings;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces; 
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
 {
@@ -9,26 +8,6 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
     /// </summary>
     public class AzureStorageLogProviderOptions : IAzureStorageLogProviderOptions
     {
-        /// <summary>
-        ///     The Options model for the Azure Storage Log Provider
-        /// </summary>
-        /// <param name="azureStorageContainerSasUrlString">The sas url</param>
-        /// <param name="azureStorageLoggerEnabled">The azure storage enabled flag</param>
-        public AzureStorageLogProviderOptions(string azureStorageContainerSasUrlString, bool azureStorageLoggerEnabled)
-        {
-            AzureStorageLoggerEnabled = azureStorageLoggerEnabled;
-            AzureStorageContainerSasUrlString = azureStorageContainerSasUrlString;
-
-            if (AzureStorageLoggerEnabled)
-            {
-                if (string.IsNullOrEmpty(AzureStorageContainerSasUrlString))
-                    throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
-                AzureStorageContainerSasUrl = ValidateSasUrl(azureStorageContainerSasUrlString);
-            }
-
-            SuccessfulMessageTemplate = AppSettings.GetSetting(string.Format("{0}.{1}", "AzureStorage", nameof(SuccessfulMessageTemplate)));
-            FailedMessageTemplate = AppSettings.GetSetting(string.Format("{0}.{1}", "AzureStorage", nameof(FailedMessageTemplate)));
-        }
 
         /// <summary>
         ///     The Options model for the Azure Storage Log Provider

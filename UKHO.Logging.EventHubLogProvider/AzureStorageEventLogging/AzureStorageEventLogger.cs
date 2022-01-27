@@ -3,22 +3,33 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Azure;
+using Azure.Core;
 using Azure.Storage.Blobs;
-
+using Azure.Storage.Blobs.Models;
 using UKHO.Logging.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+using Microsoft.IdentityModel.Tokens;
+
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
 
 namespace UKHO.Logging.AzureStorageEventLogging
 {
+    /// <summary>
+    ///     The Azure storage event logger model
+    /// </summary>
     public class AzureStorageEventLogger : IAzureStorageEventLogger
     {
         private readonly BlobContainerClient _containerClient;
-        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _cancellationToken;
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="containerClient">The container client</param>
         public AzureStorageEventLogger(BlobContainerClient containerClient)
         {
             _containerClient = containerClient;
@@ -61,7 +72,7 @@ namespace UKHO.Logging.AzureStorageEventLogging
                 blobName = name.ToString().Replace("-", "_");
 
             if (string.IsNullOrEmpty(extension))
-                blobName += string.Format("{0}{1}", ".", "txt");
+                blobName += string.Format("{0}{1}", ".", "json");
             else
                 blobName += string.Format("{0}{1}", ".", extension);
 
@@ -112,7 +123,20 @@ namespace UKHO.Logging.AzureStorageEventLogging
             if (withCancellation)
                 _cancellationToken = cancellationTokenSource.Token;
 
-            var uploadBlobResponse = _containerClient.UploadBlob(model.FileFullName, binaryData, _cancellationToken);
+            Response<BlobContentInfo> uploadBlobResponse = null;
+            try
+            {
+                uploadBlobResponse = _containerClient.UploadBlob(model.FileFullName, binaryData, _cancellationToken);
+            }
+            catch (Exception uploadBlobException)
+            {
+                return new AzureStorageEventLogResult(string.Format("{0}-{1}", uploadBlobException.GetType().Name, uploadBlobException.Message),
+                                                      0,
+                                                      Guid.Empty.ToString(),
+                                                      null,
+                                                      false,
+                                                      model.FileFullName);
+            }
 
             if (uploadBlobResponse.Value != null)
                 if ((uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created)
@@ -122,10 +146,14 @@ namespace UKHO.Logging.AzureStorageEventLogging
             return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase,
                                                   uploadBlobResponse.GetRawResponse().Status,
                                                   uploadBlobResponse.GetRawResponse().ClientRequestId,
-                                                  uploadBlobResponse.Value.BlobSequenceNumber,
+                                                  uploadBlobResponse.Value.EncryptionKeySha256,
                                                   isStored,
-                                                  model.FileFullName);
+                                                  model.FileFullName,
+                                                  uploadBlobResponse.GetRawResponse().GetFileSize(model.Data.Length),
+                                                  uploadBlobResponse.GetRawResponse().GetModifiedDate());
         }
+
+        
 
         /// <summary>
         ///     Stores the log file on Azure(Async)
@@ -141,7 +169,20 @@ namespace UKHO.Logging.AzureStorageEventLogging
             if (withCancellation)
                 _cancellationToken = cancellationTokenSource.Token;
 
-            var uploadBlobResponse = await _containerClient.UploadBlobAsync(model.FileFullName, binaryData, _cancellationToken);
+            Response<BlobContentInfo> uploadBlobResponse = null;
+            try
+            { 
+                uploadBlobResponse = await _containerClient.UploadBlobAsync(model.FileFullName, binaryData, _cancellationToken);
+            }
+            catch (Exception uploadBlobException)
+            {
+                return new AzureStorageEventLogResult(string.Format("{0}-{1}",uploadBlobException.GetType().Name,uploadBlobException.Message),
+                                                      0,
+                                                      Guid.Empty.ToString(),
+                                                      null,
+                                                      false,
+                                                      model.FileFullName);
+            }
 
             if (uploadBlobResponse.Value != null)
                 if ((uploadBlobResponse.GetRawResponse().Status == (int)HttpStatusCode.Created)
@@ -151,9 +192,19 @@ namespace UKHO.Logging.AzureStorageEventLogging
             return new AzureStorageEventLogResult(uploadBlobResponse.GetRawResponse().ReasonPhrase,
                                                   uploadBlobResponse.GetRawResponse().Status,
                                                   uploadBlobResponse.GetRawResponse().ClientRequestId,
-                                                  uploadBlobResponse.Value.BlobSequenceNumber,
+                                                  uploadBlobResponse.Value.EncryptionKeySha256,
                                                   isStored,
-                                                  model.FileFullName);
+                                                  model.FileFullName,
+                                                  uploadBlobResponse.GetRawResponse().GetFileSize(model.Data.Length),
+                                                  uploadBlobResponse.GetRawResponse().GetModifiedDate());
+        }
+
+        /// <summary>
+        /// Nullify the token source (For Unit tests only)
+        /// </summary>
+        public void NullifyTokenSource()
+        {
+            cancellationTokenSource = null;
         }
     }
 }
