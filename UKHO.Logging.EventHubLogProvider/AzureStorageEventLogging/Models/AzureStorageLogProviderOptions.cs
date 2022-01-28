@@ -14,6 +14,8 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         /// <param name="azureStorageContainerSasUrlString">The sas url</param>
         /// <param name="azureStorageLoggerEnabled">The azure storage enabled flag</param>
+        /// <param name="successfulMessageTemplate">The successful message template</param>
+        /// <param name="failedMessageTemplate">The failed message template</param>
         public AzureStorageLogProviderOptions(string azureStorageContainerSasUrlString,
                                               bool azureStorageLoggerEnabled,
                                               string successfulMessageTemplate,
@@ -69,8 +71,8 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// <returns>A url model</returns>
         private Uri ValidateSasUrl(string url)
         {
-            Uri uri = null;
-            var isValid = Uri.TryCreate(url, UriKind.Absolute, out uri) && Uri.IsWellFormedUriString(url, UriKind.Absolute);
+            
+            var isValid = Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && Uri.IsWellFormedUriString(url, UriKind.Absolute);
 
             if (isValid == false)
                 throw new UriFormatException("Invalid sas url.");

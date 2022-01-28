@@ -4,26 +4,22 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using UKHO.Logging.AzureStorageEventLogging.Models;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
-using Microsoft.IdentityModel.Tokens;
-
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
-namespace UKHO.Logging.AzureStorageEventLogging
+namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging
 {
     /// <summary>
     ///     The Azure storage event logger model
     /// </summary>
     public class AzureStorageEventLogger : IAzureStorageEventLogger
     {
-        private readonly BlobContainerClient _containerClient;
-        private CancellationToken _cancellationToken;
+        private readonly BlobContainerClient containerClient;
+        private CancellationToken cancellationToken;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
@@ -32,8 +28,8 @@ namespace UKHO.Logging.AzureStorageEventLogging
         /// <param name="containerClient">The container client</param>
         public AzureStorageEventLogger(BlobContainerClient containerClient)
         {
-            _containerClient = containerClient;
-            _cancellationToken = new CancellationToken();
+            this.containerClient = containerClient;
+            cancellationToken = new CancellationToken();
         }
 
         /// <summary>
@@ -95,7 +91,7 @@ namespace UKHO.Logging.AzureStorageEventLogging
         /// <returns>AzureStorageEventLogCancellationResult</returns>
         public AzureStorageEventLogCancellationResult CancelLogFileStoringOperation()
         {
-            if (_cancellationToken.CanBeCanceled)
+            if (cancellationToken.CanBeCanceled)
                 try
                 {
                     cancellationTokenSource.Cancel();
@@ -121,12 +117,12 @@ namespace UKHO.Logging.AzureStorageEventLogging
             var binaryData = new BinaryData(model.Data);
 
             if (withCancellation)
-                _cancellationToken = cancellationTokenSource.Token;
+                cancellationToken = cancellationTokenSource.Token;
 
             Response<BlobContentInfo> uploadBlobResponse = null;
             try
             {
-                uploadBlobResponse = _containerClient.UploadBlob(model.FileFullName, binaryData, _cancellationToken);
+                uploadBlobResponse = containerClient.UploadBlob(model.FileFullName, binaryData, cancellationToken);
             }
             catch (Exception uploadBlobException)
             {
@@ -153,8 +149,6 @@ namespace UKHO.Logging.AzureStorageEventLogging
                                                   uploadBlobResponse.GetRawResponse().GetModifiedDate());
         }
 
-        
-
         /// <summary>
         ///     Stores the log file on Azure(Async)
         /// </summary>
@@ -167,16 +161,16 @@ namespace UKHO.Logging.AzureStorageEventLogging
             var binaryData = new BinaryData(model.Data);
 
             if (withCancellation)
-                _cancellationToken = cancellationTokenSource.Token;
+                cancellationToken = cancellationTokenSource.Token;
 
             Response<BlobContentInfo> uploadBlobResponse = null;
             try
-            { 
-                uploadBlobResponse = await _containerClient.UploadBlobAsync(model.FileFullName, binaryData, _cancellationToken);
+            {
+                uploadBlobResponse = await containerClient.UploadBlobAsync(model.FileFullName, binaryData, cancellationToken);
             }
             catch (Exception uploadBlobException)
             {
-                return new AzureStorageEventLogResult(string.Format("{0}-{1}",uploadBlobException.GetType().Name,uploadBlobException.Message),
+                return new AzureStorageEventLogResult(string.Format("{0}-{1}", uploadBlobException.GetType().Name, uploadBlobException.Message),
                                                       0,
                                                       Guid.Empty.ToString(),
                                                       null,
@@ -200,7 +194,7 @@ namespace UKHO.Logging.AzureStorageEventLogging
         }
 
         /// <summary>
-        /// Nullify the token source (For Unit tests only)
+        ///     Nullify the token source (For Unit tests only)
         /// </summary>
         public void NullifyTokenSource()
         {

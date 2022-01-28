@@ -16,6 +16,8 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// <param name="fileSHA">The blob SHA 256</param>
         /// <param name="isStored">The flag that determines if the result was successful/failed</param>
         /// <param name="blobFullName">The blob full name</param>
+        /// <param name="fileSize">The file size (optional)</param>
+        /// <param name="modifiedDate">The modified date(optional)</param>
         public AzureStorageEventLogResult(string reasonPhrase,
                                           int statusCode,
                                           string requestId,

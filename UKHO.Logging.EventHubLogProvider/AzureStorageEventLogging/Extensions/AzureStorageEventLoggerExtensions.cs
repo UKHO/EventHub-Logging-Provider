@@ -49,9 +49,8 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
         /// <param name="key">The key</param>
         /// <returns>The value</returns>
         public static string GetLogEntryPropertyValue(this Dictionary<string, object> set, string key)
-        {
-            object value;
-            var keyExists = set.TryGetValue(key, out value);
+        { 
+            var keyExists = set.TryGetValue(key, out object value);
 
             return keyExists & (value != null) ? value.ToString() : null;
         }

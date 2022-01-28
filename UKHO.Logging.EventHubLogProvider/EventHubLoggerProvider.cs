@@ -66,7 +66,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
             loggerFactory.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.azureStorageLogProviderOptions))));
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
             return loggerFactory;
         }
 
@@ -77,7 +77,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
             loggingBuilder.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.azureStorageLogProviderOptions))));
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
             return loggingBuilder;
         }
     }

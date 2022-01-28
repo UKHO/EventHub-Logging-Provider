@@ -39,7 +39,7 @@ namespace UKHO.Logging.EventHubLogProvider
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
 
-        public AzureStorageLogProviderOptions azureStorageLogProviderOptions { get; set; }
+        public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; set; }
 
         /// <summary>
         ///     If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
@@ -88,7 +88,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ValidateConnection()
         {
-            var eventHubClientWrapper = new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, azureStorageLogProviderOptions);
+            var eventHubClientWrapper = new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
             eventHubClientWrapper.ValidateConnection();
         }
 

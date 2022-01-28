@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UKHO.Logging.AzureStorageEventLogging.Models
+namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
 {
     public class AzureStorageEventModel
     {
@@ -8,7 +8,7 @@ namespace UKHO.Logging.AzureStorageEventLogging.Models
         ///     The default constructor
         /// </summary>
         /// <param name="fileFullName">The file full name</param>
-        /// <param name="data" The data ( string)></param>
+        /// <param name="data"> The data ( string)></param>
         public AzureStorageEventModel(string fileFullName, string data)
         {
             FileFullName = string.IsNullOrEmpty(fileFullName) ? throw new NullReferenceException(nameof(FileFullName)) : fileFullName;

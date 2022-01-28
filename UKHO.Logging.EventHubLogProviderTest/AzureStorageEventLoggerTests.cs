@@ -9,9 +9,8 @@ using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using UKHO.Logging.AzureStorageEventLogging;
-using UKHO.Logging.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
@@ -29,10 +28,10 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [SetUp]
         public void SetUp()
         {
-            _blobContainerClient = A.Dummy<BlobContainerClient>();
+            blobContainerClient = A.Dummy<BlobContainerClient>();
         }
 
-        private BlobContainerClient _blobContainerClient;
+        private BlobContainerClient blobContainerClient;
 
         #region string builders
 
@@ -42,7 +41,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_GenerateServiceName()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var serviceName = "testService";
             var environment = "testEnvironment";
             var result = azureStorageLogger.GenerateServiceName(serviceName, environment);
@@ -56,7 +55,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_GeneratePathForErrorBlob()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var dt = new DateTime(2021, 12, 10, 12, 13, 14);
             //DateTime.Parse("2020-12-10 12:13:14");
             var result = azureStorageLogger.GeneratePathForErrorBlob(dt);
@@ -70,7 +69,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_GenerateErrorBlobName_WithGuidOnly()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var name = Guid.NewGuid();
             var result = azureStorageLogger.GenerateErrorBlobName(name);
             var expected = string.Format("{0}.{1}", name.ToString().Replace("-", "_"), "json");
@@ -83,7 +82,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_GenerateErrorBlobName_WithGuidAndExtension()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var name = Guid.NewGuid();
             var extension = "json";
             var result = azureStorageLogger.GenerateErrorBlobName(name, extension);
@@ -97,14 +96,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_GenerateBlobFullName()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var name = Guid.NewGuid();
             var extension = "json";
             var serviceName = "testService";
             var path = "2021\\12\\10\\12\\13\\14";
             var blobName = string.Format("{0}.{1}", name.ToString().Replace("-", "_"), extension);
-            var azureSotrageBlobModel = new AzureStorageBlobFullNameModel(serviceName, path, blobName);
-            var result = azureStorageLogger.GenerateBlobFullName(azureSotrageBlobModel);
+            var azureStorageBlobModel = new AzureStorageBlobFullNameModel(serviceName, path, blobName);
+            var result = azureStorageLogger.GenerateBlobFullName(azureStorageBlobModel);
             var expected = Path.Combine(serviceName, path, blobName);
             Assert.AreEqual(expected, result);
         }
@@ -119,7 +118,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_EventHubLogFMessageCancellation_UnableToCancel()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
 
             var result = azureStorageLogger.CancelLogFileStoringOperation();
 
@@ -132,9 +131,9 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_EventHubLogFMessageCancellation_CancelSuccessfully()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
-            var azureStorsageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
-            azureStorageLogger.StoreLogFile(azureStorsageModel, true);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
+            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
+            azureStorageLogger.StoreLogFile(azureStorageModel, true);
             var result = azureStorageLogger.CancelLogFileStoringOperation();
 
             Assert.AreEqual(AzureStorageEventLogCancellationResult.Successful, result);
@@ -146,9 +145,9 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_EventHubLogFMessageCancellation_CancelFailed()
         {
-            var azureStorageLogger = new AzureStorageEventLogger(_blobContainerClient);
-            var azureStorsageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
-            azureStorageLogger.StoreLogFile(azureStorsageModel, true);
+            var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
+            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
+            azureStorageLogger.StoreLogFile(azureStorageModel, true);
             azureStorageLogger.NullifyTokenSource();
             var result = azureStorageLogger.CancelLogFileStoringOperation();
 
@@ -195,10 +194,6 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             var azureLogger = new AzureStorageEventLogger(fakeEventHubClient.AzureStorageBlobContainerBuilder.BlobContainerClient);
 
-            var blobFullName = azureLogger.GenerateBlobFullName(new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(service, environment),
-                                                                                                  azureLogger.GeneratePathForErrorBlob(testDateStamp),
-                                                                                                  azureLogger.GenerateErrorBlobName()));
-
             Assert.IsTrue(sentLogEntry.MessageTemplate.StartsWith("Azure Storage Logging:"));
             Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("Azure Storage Logging:"));
         }
@@ -227,7 +222,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                    MessageTemplate = string.Empty, //find the size of the rest of the object so that we can create it exactly 1 mb
                                    Level = "LogLevel"
                                };
-            template = CreateMessageEqualTo1MB(testLogEntry);
+            template = CreateMessageEqualTo1Mb(testLogEntry);
             testLogEntry.MessageTemplate = template;
             eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
@@ -244,10 +239,6 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
 
             var azureLogger = new AzureStorageEventLogger(fakeEventHubClient.AzureStorageBlobContainerBuilder.BlobContainerClient);
-
-            var blobFullName = azureLogger.GenerateBlobFullName(new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(service, environment),
-                                                                                                  azureLogger.GeneratePathForErrorBlob(testDateStamp),
-                                                                                                  azureLogger.GenerateErrorBlobName()));
 
             Assert.IsTrue(sentLogEntry.MessageTemplate.StartsWith("Azure Storage Logging:"));
             Assert.IsTrue(sentLogEntry.Exception.Message.StartsWith("Azure Storage Logging:"));
@@ -294,10 +285,6 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.AreEqual(testLogEntry.Level, sentLogEntry.Level);
 
             var azureLogger = new AzureStorageEventLogger(fakeEventHubClient.AzureStorageBlobContainerBuilder.BlobContainerClient);
-
-            var blobFullName = azureLogger.GenerateBlobFullName(new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(service, environment),
-                                                                                                  azureLogger.GeneratePathForErrorBlob(testDateStamp),
-                                                                                                  azureLogger.GenerateErrorBlobName()));
 
             Assert.AreEqual(sentLogEntry.MessageTemplate, template);
             Assert.AreEqual(testLogEntry.Exception.Message, sentLogEntry.Exception.Message);
@@ -346,7 +333,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// </summary>
         /// <param name="entry">The entry model</param>
         /// <returns>The message template</returns>
-        private string CreateMessageEqualTo1MB(LogEntry entry)
+        private string CreateMessageEqualTo1Mb(LogEntry entry)
         {
             return GenerateTestMessage(1024 * 1024 - GetSizeOfJsonObject(entry));
         }

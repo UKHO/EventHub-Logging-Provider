@@ -17,9 +17,8 @@
 
 using System;
 using System.Threading.Tasks;
-using UKHO.Logging.AzureStorageEventLogging.Models;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums; 
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
 {

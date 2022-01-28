@@ -17,16 +17,12 @@
 
 using System;
 using System.Text;
-
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
-
-using UKHO.Logging.AzureStorageEventLogging;
-using UKHO.Logging.AzureStorageEventLogging.Models;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
