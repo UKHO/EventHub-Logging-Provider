@@ -14,11 +14,11 @@ namespace UKHO.Logging.EventHubLogProviderTest.Factories
         public ResourcesFactory()
         {
             SuccessTemplateMessage =
-                "Azure Storage Logging: A blob with the error details was created at {{BlobFullName}}. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}} Sha256: {{FileSHA}} FileSize(Bs): {{FileSize}} FileModifiedDate: {{ModifiedDate}}";
-                //GetSetting("AzureStorage.SuccessMessageTemplate");
+                //"Azure Storage Logging: A blob with the error details was created at {{BlobFullName}}. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}} Sha256: {{FileSHA}} FileSize(Bs): {{FileSize}} FileModifiedDate: {{ModifiedDate}}";
+                GetSetting("AzureStorage.SuccessMessageTemplate");
                 FailureTemplateMessage =
-                    "Azure Storage Logging: Storing blob failed. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}}";
-                //GetSetting("AzureStorage.FailureMessageTemplate");
+                    //"Azure Storage Logging: Storing blob failed. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}}";
+                GetSetting("AzureStorage.FailureMessageTemplate");
         }
 
         public string SuccessTemplateMessage { get; }
