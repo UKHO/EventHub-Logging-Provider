@@ -10,6 +10,10 @@
     <PackageId>UKHO.Logging.EventHubLogProvider</PackageId>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net461|AnyCPU'">
+    <DocumentationFile>docs\Technical Documentation\UKHO.Logging.EventHubLogProvider.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="2.0.0" />
