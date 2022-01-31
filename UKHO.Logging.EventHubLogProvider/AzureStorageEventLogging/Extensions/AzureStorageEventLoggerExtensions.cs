@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Azure;
 using Newtonsoft.Json;
+
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
@@ -30,16 +32,40 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
         /// <param name="builderModel">The builder model</param>
         /// <param name="message">The message</param>
         /// <param name="mbs">The size(MBs)</param>
-        /// <returns>True if logging is necessary</returns>
-        public static bool NeedsAzureStorageLogging(this AzureStorageBlobContainerBuilder builderModel,
+        /// <returns>AzureStorageLoggingCheckResult</returns>
+        public static AzureStorageLoggingCheckResult NeedsAzureStorageLogging(this AzureStorageBlobContainerBuilder builderModel,
                                                     string message,
                                                     int mbs)
         {
-            if (builderModel != null && builderModel.AzureStorageLogProviderOptions != null &&
-                builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled
-                && IsLongMessage(message, mbs))
-                return true;
-            return false;
+
+            bool isLongMessage = IsLongMessage(message, mbs);
+
+            if (isLongMessage == true)
+            {
+                if (builderModel != null && builderModel.AzureStorageLogProviderOptions != null &&
+                    builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled)
+                {
+                    return AzureStorageLoggingCheckResult.LoggingWithMessage;
+                }
+                else
+                {
+                    return AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning;
+                }
+            }
+            else
+            {
+                return AzureStorageLoggingCheckResult.NoLogging;
+            }
+
+        }
+
+        public static string ToLongMessageWarning(this LogEntry logEntry,JsonSerializerSettings serializerSettings)
+        {
+            string template = $"A log over 1MB was submitted with a message of {logEntry.MessageTemplate}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
+
+            logEntry.Exception = new Exception(template);
+
+            return JsonConvert.SerializeObject(logEntry,serializerSettings);
         }
 
         /// <summary>

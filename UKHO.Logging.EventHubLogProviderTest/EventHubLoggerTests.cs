@@ -18,16 +18,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-
 using FakeItEasy;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
-
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider;
 
 namespace UKHO.Logging.EventHubLogProviderTest
@@ -167,24 +162,47 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.AreEqual(expectedResult, eventHubLogger.IsEnabled(attemptedLogLevel));
         }
 
+        private EventHubLogger CreateTestEventHubLogger(LogLevel configLogLevel,
+                                                        LogLevel ukhoLogLevel,
+                                                        string category,
+                                                        IEventHubLog eventHubLog,
+                                                        Action<IDictionary<string, object>> additionalValuesProvider = null)
+        {
+            return new EventHubLogger(eventHubLog,
+                                      category,
+                                      new EventHubLogProviderOptions
+                                      {
+                                          DefaultMinimumLogLevel = configLogLevel,
+                                          NodeName = NodeName,
+                                          System = System,
+                                          Environment = "Test Environment",
+                                          Service = Service,
+                                          AdditionalValuesProvider = additionalValuesProvider ?? (d => { }),
+                                          MinimumLogLevels = { { "UKHO", ukhoLogLevel } }
+                                      });
+        }
+
         [Test]
-        public void TestLoggerLogsRequiredEnvironmentParameters()
+        public void TestLoggerAddExceptionToLogIfAdditionalParametersActionExplodes()
         {
             LogEntry loggedEntry = null;
             A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            var exception = new Exception("My Exception Message");
+            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => throw exception);
+            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
+            Assert.IsFalse(loggedEntry.LogProperties.ContainsValue("AdditionalData"));
+            Assert.AreEqual("additionalValuesProvider throw exception: My Exception Message", loggedEntry.LogProperties["LoggingError"]);
+            Assert.AreSame(exception, loggedEntry.LogProperties["LoggingErrorException"]);
+        }
 
-            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
-            eventHubLogger.Log(LogLevel.Information, 123, "Simple Message", null, (s, e) => s);
-
-            CollectionAssert.AreEquivalent(new[]
-                                           {
-                                               "_ComponentName",
-                                               "_Environment",
-                                               "_NodeName",
-                                               "_Service",
-                                               "_System",
-                                           }.ToList(),
-                                           loggedEntry.LogProperties.Keys);
+        [Test]
+        public void TestLoggerAddsAdditionalParameters()
+        {
+            LogEntry loggedEntry = null;
+            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
+            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => d["AdditionalData"] = "NewData");
+            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
+            Assert.AreEqual("NewData", loggedEntry.LogProperties["AdditionalData"]);
         }
 
         [Test]
@@ -195,7 +213,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
 
-            IEnumerable<KeyValuePair<string, object>> structuredData = new Dictionary<string, object> { { "Property1", "Value1" }, { "Property2", "Value Two" }, };
+            IEnumerable<KeyValuePair<string, object>> structuredData = new Dictionary<string, object> { { "Property1", "Value1" }, { "Property2", "Value Two" } };
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(", ", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
             CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
@@ -245,48 +263,23 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void TestLoggerAddsAdditionalParameters()
+        public void TestLoggerLogsRequiredEnvironmentParameters()
         {
             LogEntry loggedEntry = null;
             A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
-            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => d["AdditionalData"] = "NewData");
-            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
-            Assert.AreEqual("NewData", loggedEntry.LogProperties["AdditionalData"]);
-        }
 
-        [Test]
-        public void TestLoggerAddExceptionToLogIfAdditionalParametersActionExplodes()
-        {
-            LogEntry loggedEntry = null;
-            A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
-            var exception = new Exception("My Exception Message");
-            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog, d => throw exception);
-            eventHubLogger.Log(LogLevel.Error, 456, "Log Info", null, (s, e) => s);
-            Assert.IsFalse(loggedEntry.LogProperties.ContainsValue("AdditionalData"));
-            Assert.AreEqual("additionalValuesProvider throw exception: My Exception Message", loggedEntry.LogProperties["LoggingError"]);
-            Assert.AreSame(exception, loggedEntry.LogProperties["LoggingErrorException"]);
-        }
+            var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
+            eventHubLogger.Log(LogLevel.Information, 123, "Simple Message", null, (s, e) => s);
 
-        private EventHubLogger CreateTestEventHubLogger(LogLevel configLogLevel,
-                                                        LogLevel ukhoLogLevel,
-                                                        string category,
-                                                        IEventHubLog eventHubLog,
-                                                        Action<IDictionary<string, object>> additionalValuesProvider = null)
-        {
-            return new EventHubLogger(eventHubLog,
-                                      category,
-                                      new EventHubLogProviderOptions
-                                      {
-                                          DefaultMinimumLogLevel = configLogLevel,
-                                          NodeName = NodeName,
-                                          System = System,
-                                          Environment = "Test Environment",
-                                          Service = Service,
-                                          AdditionalValuesProvider = additionalValuesProvider ?? (d => { }),
-                                          MinimumLogLevels = { { "UKHO", ukhoLogLevel } }
-                                      });
+            CollectionAssert.AreEquivalent(new[]
+                                           {
+                                               "_ComponentName",
+                                               "_Environment",
+                                               "_NodeName",
+                                               "_Service",
+                                               "_System"
+                                           }.ToList(),
+                                           loggedEntry.LogProperties.Keys);
         }
-
-        
     }
 }

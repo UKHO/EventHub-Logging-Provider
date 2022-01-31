@@ -116,7 +116,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         ///     Test for the cancellation operation (When unable to cancel)
         /// </summary>
         [Test]
-        public void Test_EventHubLogFMessageCancellation_UnableToCancel()
+        public void Test_EventHubLog_MessageCancellation_UnableToCancel()
         {
             var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
 
@@ -129,7 +129,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         ///     Test for the cancellation operation (When able to cancel)
         /// </summary>
         [Test]
-        public void Test_EventHubLogFMessageCancellation_CancelSuccessfully()
+        public void Test_EventHubLog_MessageCancellation_CancelSuccessfully()
         {
             var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
@@ -143,7 +143,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         ///     Test for the cancellation operation (When cancellation fails)
         /// </summary>
         [Test]
-        public void Test_EventHubLogFMessageCancellation_CancelFailed()
+        public void Test_EventHubLog_MessageCancellation_CancelFailed()
         {
             var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
             var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));

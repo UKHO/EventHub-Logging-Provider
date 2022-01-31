@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProviderTest.Factories;
@@ -153,7 +154,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         ///     Test for the azure storage needs logging extension (When  logger enabled flag is false)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledFalse()
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledFalseAndMessageGreaterThan1Mb()
         {
             var azureStorageBlobContainerBuilder =
                 new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
@@ -162,14 +163,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsFalse(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning,result);
         }
 
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  logger enabled flag is true)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledTrue()
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledTrueAndMessageGreaterThan1Mb()
         {
             var azureStorageBlobContainerBuilder =
                 new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
@@ -178,14 +179,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsTrue(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LoggingWithMessage, result);
         }
 
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  log provider options are not null)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNotNull()
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNotNullAndMessageGreaterThan1Mb()
         {
             var azureStorageBlobContainerBuilder =
                 new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
@@ -194,26 +195,26 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsTrue(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LoggingWithMessage, result);
         }
 
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  log provider options are null)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNull()
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNullAndMessageGreaterThan1Mb()
         {
             var azureStorageBlobContainerBuilder = new AzureStorageBlobContainerBuilder(null);
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsFalse(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning, result);
         }
 
         /// <summary>
         ///     Test for the azure storage needs logging extension (When builder model is not null)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithBuilderModelNotNull()
+        public void Test_NeedsAzureStorageLogging_WithBuilderModelNotNullAndMessageGreaterThan1Mb()
         {
             var azureStorageBlobContainerBuilder =
                 new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
@@ -222,19 +223,19 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsTrue(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LoggingWithMessage, result);
         }
 
         /// <summary>
         ///     Test for the azure storage needs logging extension (When builder model is null)
         /// </summary>
         [Test]
-        public void Test_NeedsAzureStorageLogging_WithBuilderModelNull()
+        public void Test_NeedsAzureStorageLogging_WithBuilderModelNullAndMessageGreaterThan1Mb()
         {
             AzureStorageBlobContainerBuilder azureStorageBlobContainerBuilder = null;
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsFalse(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning, result);
         }
 
         /// <summary>
@@ -250,7 +251,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsTrue(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LoggingWithMessage, result);
         }
 
         /// <summary>
@@ -266,7 +267,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 1025);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsTrue(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LoggingWithMessage, result);
         }
 
         /// <summary>
@@ -282,7 +283,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                                                                         resourcesFactory.FailureTemplateMessage));
             var message = GenerateTestMessage(1024 * 512);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
-            Assert.IsFalse(result);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.NoLogging, result);
         }
 
         /// <summary>
