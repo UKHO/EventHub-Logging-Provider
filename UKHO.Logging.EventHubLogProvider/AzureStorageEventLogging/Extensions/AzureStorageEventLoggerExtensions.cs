@@ -61,10 +61,11 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
 
         public static string ToLongMessageWarning(this LogEntry logEntry,JsonSerializerSettings serializerSettings)
         {
-            string template = $"A log over 1MB was submitted with a message of {logEntry.MessageTemplate}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
+            string template = $"A log over 1MB was submitted with a message of template: {logEntry.MessageTemplate}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
 
             logEntry.Exception = new Exception(template);
-
+            logEntry.MessageTemplate = "A log over 1MB was submitted with a message of template: {MessageTemplate}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
+            logEntry.LogProperties = null;
             return JsonConvert.SerializeObject(logEntry,serializerSettings);
         }
 
