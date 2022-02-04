@@ -73,10 +73,10 @@ namespace UKHO.Logging.EventHubLogProvider
 
                 switch (azureStorageLoggingCheckResult)
                 {
-                    case AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning:
+                    case AzureStorageLoggingCheckResult.LogWarningNoStorage:
                         jsonLogEntry = logEntry.ToLongMessageWarning(settings);
                         break;
-                    case AzureStorageLoggingCheckResult.LoggingWithMessage:
+                    case AzureStorageLoggingCheckResult.LogWarningAndStoreMessage:
                         var azureLogger = new AzureStorageEventLogger(this.azureStorageBlobContainerBuilder.BlobContainerClient);
                         string blobFullName = azureLogger.GenerateBlobFullName(
                                                                                new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(

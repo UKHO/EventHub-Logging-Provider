@@ -6,7 +6,7 @@
     public enum AzureStorageLoggingCheckResult
     {
         NoLogging = 0,
-        NoLoggingWithMessageWarning = 1,
-        LoggingWithMessage = 2
+        LogWarningNoStorage = 1,
+        LogWarningAndStoreMessage = 2
     }
 }

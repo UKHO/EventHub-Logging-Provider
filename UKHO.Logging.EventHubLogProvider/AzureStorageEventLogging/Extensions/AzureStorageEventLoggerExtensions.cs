@@ -45,11 +45,11 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions
                 if (builderModel != null && builderModel.AzureStorageLogProviderOptions != null &&
                     builderModel.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled)
                 {
-                    return AzureStorageLoggingCheckResult.LoggingWithMessage;
+                    return AzureStorageLoggingCheckResult.LogWarningAndStoreMessage;
                 }
                 else
                 {
-                    return AzureStorageLoggingCheckResult.NoLoggingWithMessageWarning;
+                    return AzureStorageLoggingCheckResult.LogWarningNoStorage;
                 }
             }
             else
