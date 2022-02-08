@@ -17,11 +17,13 @@
 
 using System;
 using System.Text;
-
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
@@ -29,6 +31,7 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         private IEventHubClientWrapper eventHubClientWrapper;
         private readonly JsonSerializerSettings settings;
+        private readonly AzureStorageBlobContainerBuilder azureStorageBlobContainerBuilder;
 
         public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
         {
@@ -39,10 +42,13 @@ namespace UKHO.Logging.EventHubLogProvider
                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                            ContractResolver = new NullPropertyResolver()
                        };
+            this.azureStorageBlobContainerBuilder = eventHubClientWrapper.AzureStorageBlobContainerBuilder;
         }
 
         public async void Log(LogEntry logEntry)
         {
+
+ 
             try
             {
                 string jsonLogEntry;
@@ -61,6 +67,28 @@ namespace UKHO.Logging.EventHubLogProvider
                                    EventId = new EventId(7437)
                                };
                     jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                }
+
+                AzureStorageLoggingCheckResult azureStorageLoggingCheckResult = this.azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry, 1);
+
+                switch (azureStorageLoggingCheckResult)
+                {
+                    case AzureStorageLoggingCheckResult.LogWarningNoStorage:
+                        jsonLogEntry = logEntry.ToLongMessageWarning(settings);
+                        break;
+                    case AzureStorageLoggingCheckResult.LogWarningAndStoreMessage:
+                        var azureLogger = new AzureStorageEventLogger(this.azureStorageBlobContainerBuilder.BlobContainerClient);
+                        string blobFullName = azureLogger.GenerateBlobFullName(
+                                                                               new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(
+                                                                                                                  logEntry.LogProperties.GetLogEntryPropertyValue("_Service"),
+                                                                                                                  logEntry.LogProperties.GetLogEntryPropertyValue("_Environment")),
+                                                                                                                 azureLogger.GeneratePathForErrorBlob(logEntry.Timestamp),
+                                                                                                                 azureLogger.GenerateErrorBlobName()));
+                        var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
+                        var result = await azureLogger.StoreLogFileAsync(azureStorageModel);
+
+                        jsonLogEntry = result.ToJsonLogEntryString(this.azureStorageBlobContainerBuilder.AzureStorageLogProviderOptions, logEntry, settings);
+                        break;
                 }
 
                 await eventHubClientWrapper.SendAsync(new EventData(Encoding.UTF8.GetBytes(jsonLogEntry)));

@@ -1,0 +1,373 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UKHO.Logging.EventHubLogProvider</name>
+    </assembly>
+    <members>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger">
+            <summary>
+                The Azure storage event logger model
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.#ctor(Azure.Storage.Blobs.BlobContainerClient)">
+            <summary>
+                Constructor
+            </summary>
+            <param name="containerClient">The container client</param>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.GenerateServiceName(System.String,System.String)">
+            <summary>
+                Generates the service name for the container subfolder
+            </summary>
+            <param name="serviceName">The service name</param>
+            <param name="environment">The environment</param>
+            <returns>the service name(string)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.GeneratePathForErrorBlob(System.DateTime)">
+            <summary>
+                Generates a path for the error message blob
+            </summary>
+            <param name="date">The datetime</param>
+            <returns>The blob path</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.GenerateErrorBlobName(System.Nullable{System.Guid},System.String)">
+            <summary>
+                Generates a new blob name
+            </summary>
+            <param name="name">The name of the blob</param>
+            <param name="extension">The extension</param>
+            <returns>The blob name(with extension)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.GenerateBlobFullName(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobFullNameModel)">
+            <summary>
+                Generates the full name for the blob
+            </summary>
+            <param name="storageBlobFullNameModel">The blob full name model</param>
+            <returns>The fullname of the blob (path + name)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.CancelLogFileStoringOperation">
+            <summary>
+                Cancels the storing operation (when possible)
+            </summary>
+            <returns>AzureStorageEventLogCancellationResult</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.StoreLogFile(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventModel,System.Boolean)">
+            <summary>
+                Stores the log file on Azure
+            </summary>
+            <param name="model">The azure storage event model</param>
+            <param name="withCancellation">Flag for the cancellation token</param>
+            <returns>The azure storage log result</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.StoreLogFileAsync(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventModel,System.Boolean)">
+            <summary>
+                Stores the log file on Azure(Async)
+            </summary>
+            <param name="model">The azure storage event model</param>
+            <param name="withCancellation">Flag for the cancellation token</param>
+            <returns>The azure storage log result(Task)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.AzureStorageEventLogger.NullifyTokenSource">
+            <summary>
+                Nullify the token source (For Unit tests only)
+            </summary>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums.AzureStorageEventLogCancellationResult">
+            <summary>
+                The Cancellation Result enumeration
+            </summary>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions">
+            <summary>
+                The Azure storage event logger extensions
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.IsLongMessage(System.String,System.Int32)">
+            <summary>
+                Determines is a string is greater or equal to the  size
+            </summary>
+            <param name="message">The message</param>
+            <param name="mbs">The size in MBs</param>
+            <returns>True/False</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.NeedsAzureStorageLogging(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobContainerBuilder,System.String,System.Int32)">
+            <summary>
+                Checks if azure storage logging in necessary
+            </summary>
+            <param name="builderModel">The builder model</param>
+            <param name="message">The message</param>
+            <param name="mbs">The size(MBs)</param>
+            <returns>True if logging is necessary</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.GetLogEntryPropertyValue(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)">
+            <summary>
+                Gets a property value from a dictionary
+            </summary>
+            <param name="set">The dictionary</param>
+            <param name="key">The key</param>
+            <returns>The value</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.ToJsonLogEntryString(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventLogResult,UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions,UKHO.Logging.EventHubLogProvider.LogEntry,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+                Creates a json log entry string from an azure storage log result
+            </summary>
+            <param name="azureStorageLogResult">The azure log storage result</param>
+            <param name="azureStorageLogProviderOptions">The azure log provider options</param>
+            <param name="existingLogEntry">The azure log entry</param>
+            <param name="jsonSettings">The json serialization settings</param>
+            <returns>The log entry string</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.ToMessageTemplate(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventLogResult,UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions)">
+            <summary>
+                Selected the message template based on the azure storage result and the azure storage provider options
+            </summary>
+            <param name="azureStorageLogResult">The azure storage result </param>
+            <param name="azureStorageLogProviderOptions">The azure storage provider options</param>
+            <returns></returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.ToLogMessage(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventLogResult,UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions,System.String)">
+            <summary>
+                Creates a log message based on the azure storage log result
+            </summary>
+            <param name="azureStorageLogResult">The azure storage result</param>
+            <param name="azureStorageLogProviderOptions">The azure storage log provider options</param>
+            <param name="template">The template</param>
+            <returns>The azure storage log message</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.GetFileSize(Azure.Response,System.Int32)">
+            <summary>
+                Gets the file size from the headers
+            </summary>
+            <param name="response">The azure response</param>
+            <param name="fileSize">The data size</param>
+            <returns>The data size</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.GetModifiedDate(Azure.Response)">
+            <summary>
+                Gets the modified date for the uploaded file
+            </summary>
+            <param name="response">The azure response</param>
+            <returns>The blob modified date</returns>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageBlobContainerBuilder">
+            <summary>
+                The Azure storage blob container builder interface
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageBlobContainerBuilder.AzureStorageLogProviderOptions">
+            <summary>
+                The azure storage log provider options
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageBlobContainerBuilder.BlobContainerClient">
+            <summary>
+                The blob container client
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageBlobContainerBuilder.Build">
+            <summary>
+                The build method
+            </summary>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger">
+            <summary>
+                The azure storage event logger interface
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.GenerateServiceName(System.String,System.String)">
+            <summary>
+                Generates the service name for the container subfolder
+            </summary>
+            <param name="serviceName">The service name</param>
+            <param name="environment">The environment</param>
+            <returns>the service name(string)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.GeneratePathForErrorBlob(System.DateTime)">
+            <summary>
+                Generates a path for the error message blob
+            </summary>
+            <param name="date">The datetime</param>
+            <returns>The blob path</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.GenerateErrorBlobName(System.Nullable{System.Guid},System.String)">
+            <summary>
+                Generates a new blob name
+            </summary>
+            <param name="name">The name of the blob</param>
+            <param name="extension">The extension</param>
+            <returns>The blob name(with extension)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.GenerateBlobFullName(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobFullNameModel)">
+            <summary>
+                Generates the full name for the blob
+            </summary>
+            <param name="storageBlobFullNameModel">The blob full name model</param>
+            <returns>The fullname of the blob (path + name)</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.CancelLogFileStoringOperation">
+            <summary>
+                Cancels the storing operation (when possible)
+            </summary>
+            <returns>AzureStorageEventLogCancellationResult</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.StoreLogFile(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventModel,System.Boolean)">
+            <summary>
+                Stores the log file
+            </summary>
+            <param name="model">The azure storage event model</param>
+            <param name="withCancellation">The flag for the cancellation token</param>
+            <returns>The store result</returns>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageEventLogger.StoreLogFileAsync(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventModel,System.Boolean)">
+            <summary>
+                Stores the log file(Async)
+            </summary>
+            <param name="model">The azure storage event model</param>
+            <param name="withCancellation">The flag for the cancellation token</param>
+            <returns>The store result(Async)</returns>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions">
+            <summary>
+            The azure storage log provider options interface
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions.AzureStorageContainerSasUrlString">
+            <summary>
+                The azure storage sas url string
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions.AzureStorageLoggerEnabled">
+            <summary>
+                Enable the azure storage functionality
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions.AzureStorageContainerSasUrl">
+            <summary>
+                The azure storage uri model
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions.SuccessfulMessageTemplate">
+            <summary>
+                The azure storage result successful template
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces.IAzureStorageLogProviderOptions.FailedMessageTemplate">
+            <summary>
+                The azure storage result failed template
+            </summary>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobContainerBuilder">
+            <summary>
+                The Azure storage blob container builder model
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobContainerBuilder.#ctor(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions)">
+            <summary>
+                Constructor
+            </summary>
+            <param name="azureStorageLogProviderOptions">The log provider options</param>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobContainerBuilder.#ctor(UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions,Azure.Storage.Blobs.BlobContainerClient)">
+            <summary>
+                Constructor
+            </summary>
+            <param name="azureStorageLogProviderOptions">The log provider options</param>
+            <param name="blobContainerClient">The blob client</param>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobContainerBuilder.Build">
+            <summary>
+                Builds the blob client
+            </summary>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobFullNameModel">
+            <summary>
+                The Blob Full Name Model
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageBlobFullNameModel.#ctor(System.String,System.String,System.String)">
+            <summary>
+                The constructor
+            </summary>
+            <param name="serviceName">The service name</param>
+            <param name="path">The blob folder path</param>
+            <param name="blobName">The blob name</param>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventLogResult">
+            <summary>
+                The azure storage event log result
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventLogResult.#ctor(System.String,System.Int32,System.String,System.String,System.Boolean,System.String,System.Nullable{System.Int64},System.Nullable{System.DateTime})">
+            <summary>
+                The default constructor
+            </summary>
+            <param name="reasonPhrase">The result reason phrase</param>
+            <param name="statusCode">The http status code</param>
+            <param name="requestId">The client request Id</param>
+            <param name="fileSHA">The blob SHA 256</param>
+            <param name="isStored">The flag that determines if the result was successful/failed</param>
+            <param name="blobFullName">The blob full name</param>
+            <param name="fileSize">The file size (optional)</param>
+            <param name="modifiedDate">The modified date(optional)</param>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageEventModel.#ctor(System.String,System.String)">
+            <summary>
+                The default constructor
+            </summary>
+            <param name="fileFullName">The file full name</param>
+            <param name="data"> The data ( string)></param>
+        </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions">
+            <summary>
+                The storage provider options model
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.#ctor(System.String,System.Boolean,System.String,System.String)">
+            <summary>
+                The Options model for the Azure Storage Log Provider
+            </summary>
+            <param name="azureStorageContainerSasUrlString">The sas url</param>
+            <param name="azureStorageLoggerEnabled">The azure storage enabled flag</param>
+            <param name="successfulMessageTemplate">The successful message template</param>
+            <param name="failedMessageTemplate">The failed message template</param>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.AzureStorageContainerSasUrlString">
+            <summary>
+                The azure storage sas url string
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.AzureStorageLoggerEnabled">
+            <summary>
+                Enable the azure storage functionality
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.AzureStorageContainerSasUrl">
+            <summary>
+                The azure storage uri model
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.SuccessfulMessageTemplate">
+            <summary>
+                The azure storage result successful template
+            </summary>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.FailedMessageTemplate">
+            <summary>
+                The azure storage result failed template
+            </summary>
+        </member>
+        <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models.AzureStorageLogProviderOptions.ValidateSasUrl(System.String)">
+            <summary>
+                Validates and converts a sas url string into a url model
+            </summary>
+            <param name="url">The url (string)</param>
+            <returns>A url model</returns>
+        </member>
+        <member name="P:UKHO.Logging.EventHubLogProvider.EventHubLogProviderOptions.ValidateConnectionString">
+            <summary>
+                If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
+                connection with EventHub can't be established and validated
+            </summary>
+        </member>
+    </members>
+</doc>

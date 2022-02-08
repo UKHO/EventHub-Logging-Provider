@@ -20,6 +20,8 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Logging;
 
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
+
 namespace UKHO.Logging.EventHubLogProvider
 {
     internal class EventHubLoggerProvider : ILoggerProvider
@@ -64,7 +66,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
             loggerFactory.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
             return loggerFactory;
         }
 
@@ -75,7 +77,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
             loggingBuilder.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath))));
+                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
             return loggingBuilder;
         }
     }
