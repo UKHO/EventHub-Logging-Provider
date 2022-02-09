@@ -77,6 +77,11 @@
                 The Cancellation Result enumeration
             </summary>
         </member>
+        <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums.AzureStorageLoggingCheckResult">
+            <summary>
+                The Azure Storage Logging Check Result enumeration
+            </summary>
+        </member>
         <member name="T:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions">
             <summary>
                 The Azure storage event logger extensions
@@ -97,7 +102,7 @@
             <param name="builderModel">The builder model</param>
             <param name="message">The message</param>
             <param name="mbs">The size(MBs)</param>
-            <returns>True if logging is necessary</returns>
+            <returns>AzureStorageLoggingCheckResult</returns>
         </member>
         <member name="M:UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions.AzureStorageEventLoggerExtensions.GetLogEntryPropertyValue(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)">
             <summary>
