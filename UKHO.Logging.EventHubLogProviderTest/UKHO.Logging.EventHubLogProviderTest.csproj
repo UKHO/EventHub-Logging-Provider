@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FakeItEasy" Version="4.5.1" />
+    <PackageReference Include="FakeItEasy" Version="7.3.0" />
     <PackageReference Include="FakeItEasy.Analyzer.CSharp" Version="4.5.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
