@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.5.12" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.3.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
