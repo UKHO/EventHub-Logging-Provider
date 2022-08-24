@@ -12,6 +12,87 @@ This package is available from NuGet: UKHO.Logging.EventHubLogProvider
     nuget install UKHO.Logging.EventHubLogProvider
 ```
 
+There are two recommended setups depending on the version of .NET: a legacy setup for .NET Core, and a setup for .NET 5/6+.
+
+#### .NET 5/6+ Setup
+
+The EventHubLogProvider is added to the ```IServiceCollection``` service collection in the ```ConfigureServices``` method via an ```ILoggingBuilder```:
+
+```cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddLogging(loggingBuilder =>
+    {
+        loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
+        loggingBuilder.AddConsole();
+        loggingBuilder.AddDebug();
+        loggingBuilder.AddAzureWebAppDiagnostics();
+        var eventHubLoggingConfiguration = new EventHubLoggingConfiguration();
+        configuration.GetSection(EventHubLoggingConfiguration.ConfigSection).Bind(eventHubLoggingConfiguration);
+        if (!string.IsNullOrEmpty(eventHubLoggingConfiguration.ConnectionString))
+        {
+            loggingBuilder.AddEventHub(options =>
+            {
+                options.Environment = eventHubLoggingConfiguration.Environment;
+                options.DefaultMinimumLogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.MinimumLoggingLevel, true);
+                options.MinimumLogLevels["UKHO"] = (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.UkhoMinimumLoggingLevel, true);
+                options.EventHubConnectionString = eventHubLoggingConfiguration.ConnectionString;
+                options.EventHubEntityPath = eventHubLoggingConfiguration.EntityPath;
+                options.System = eventHubLoggingConfiguration.System;
+                options.Service = eventHubLoggingConfiguration.Service;
+                options.NodeName = eventHubLoggingConfiguration.NodeName;
+                options.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
+            });
+        }
+    });
+}
+
+```
+
+An ```HttpContextAccessor``` is unavailable in the ```ConfigureServices``` method, however, a reference to it can be acquired in the ```Configure``` method:
+
+```cs
+public class Startup
+{
+    private readonly IConfiguration configuration;
+    private IHttpContextAccessor _httpContextAccessor;
+...
+
+
+public void Configure(IApplicationBuilder app,
+                            IWebHostEnvironment env
+                            IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    ...
+```
+
+Then, the additional values can be gathered as follows:
+
+```cs
+private void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
+{
+    if (_httpContextAccessor.HttpContext != null)
+    {
+        additionalValues["_RemoteIPAddress"] =
+            _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        additionalValues["_User-Agent"] =
+            _httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
+
+        additionalValues["_AssemblyVersion"] = Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyFileVersionAttribute>().Single()
+            .Version;
+
+        additionalValues["_X-Correlation-ID"] =
+            _httpContextAccessor.HttpContext.Request.Headers?[""].FirstOrDefault() ?? string.Empty;
+    }
+}
+```
+
+#### Legacy .NET Core Setup
+
 The EventHubLogProvider is added to a LoggerFactory as follows:
 
 ```cs
