@@ -18,7 +18,7 @@ There are two recommended setups depending on the version of .NET: a legacy setu
 
 The EventHubLogProvider is added to the ```IServiceCollection``` service collection via an ```ILoggingBuilder```.  
 
-NuGet packages can be installed for extensions to tot he builder, for example adding console logging in the below statement ```loggingBuilder.AddConsole();``` would require installing the package ```ConsoleLoggerExtensions```
+NuGet packages can be installed for extensions to the builder, for example adding console logging in the below statement ```loggingBuilder.AddConsole();``` would require installing the package ```ConsoleLoggerExtensions```
 
 ```cs
     services.AddLogging(loggingBuilder =>
