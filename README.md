@@ -16,11 +16,11 @@ There are two recommended setups depending on the version of .NET: a legacy setu
 
 #### .NET 5/6+ Setup
 
-The EventHubLogProvider is added to the ```IServiceCollection``` service collection in the ```ConfigureServices``` method via an ```ILoggingBuilder```:
+The EventHubLogProvider is added to the ```IServiceCollection``` service collection via an ```ILoggingBuilder```.  
+
+NuGet packages can be installed for extensions to tot he builder, for example adding console in the below statement ```loggingBuilder.AddConsole();``` would require installing the package ```ConsoleLoggerExtensions```
 
 ```cs
-public void ConfigureServices(IServiceCollection services)
-{
     services.AddLogging(loggingBuilder =>
     {
         loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
@@ -45,6 +45,16 @@ public void ConfigureServices(IServiceCollection services)
             });
         }
     });
+```
+
+If you've upgraded from an earlier version of .NET Core and have not migrated to the new minimal hosting model, i.e., there is still a startup.cs, the above code should be added to the ```ConfigureServices```:
+
+```cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddLogging(loggingBuilder =>
+    {
+            ...
 }
 
 ```
