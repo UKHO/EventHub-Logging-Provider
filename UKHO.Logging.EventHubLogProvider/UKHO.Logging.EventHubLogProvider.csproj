@@ -10,7 +10,7 @@
     <PackageId>UKHO.Logging.EventHubLogProvider</PackageId>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net461|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <DocumentationFile>docs\Technical Documentation\UKHO.Logging.EventHubLogProvider.xml</DocumentationFile>
   </PropertyGroup>
 
