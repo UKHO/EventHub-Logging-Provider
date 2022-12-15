@@ -34,7 +34,7 @@ stages:
       displayName: Build Project
 
     - script: |
-        ls $(Agent.BuildDirectory)
+        dir $(Agent.BuildDirectory)
         dotnet test $(solution) --no-build -c $(configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
       displayName: Test Project
 
