@@ -4,7 +4,7 @@ variables:
   solution: UKHO.Logging.EventHubLogProvider.sln
   progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
   
-name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
+name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 trigger: none
 
