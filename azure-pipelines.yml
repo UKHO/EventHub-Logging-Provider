@@ -34,8 +34,9 @@ stages:
       displayName: Build Project
 
     - script: |
-        echo $(Build.DefinitionName)
-        dotnet test $(solution) --no-build -c $(configuration) --logger:"trx;LogFileName=$(Agent.BuildDirectory)/TestResults/$(pipelineName).trx"
+        echo $(Agent.BuildDirectory)
+        echo pwd
+        dotnet test $(solution) --no-build -c $(configuration) --logger:trx
       displayName: Test Project
 
     - task: PublishTestResults@2
