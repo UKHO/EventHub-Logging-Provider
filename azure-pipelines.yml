@@ -3,8 +3,7 @@ variables:
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
   progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
-  
-name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
+  name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 trigger: none
 
@@ -33,9 +32,7 @@ stages:
     - script: dotnet build $(solution) -c $(configuration) --no-restore
       displayName: Build Project
 
-    - script: |
-        echo $(Agent.BuildDirectory)
-        dotnet test $(solution) --no-build -c $(configuration) --logger:"trx;LogFileName=$(Agent.BuildDirectory)/TestResults/$(name).trx"
+    - script: dotnet test $(solution) --no-build -c $(configuration) --logger:"trx;LogFileName=$(Agent.BuildDirectory)/TestResults/$(name).trx"
       displayName: Test Project
 
     - task: PublishTestResults@2
