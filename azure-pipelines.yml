@@ -5,7 +5,7 @@ variables:
   progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
   pipelineName: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
   
-name: $(pipelineName)
+name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 trigger: none
 
