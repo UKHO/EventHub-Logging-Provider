@@ -35,7 +35,7 @@ stages:
 
     - script: |
         echo $(Agent.BuildDirectory)
-        dotnet test $(solution) --no-build -c $(configuration) --logger:trx $(Agent.BuildDirectory)/TestResults
+        dotnet test $(solution) --no-build -c $(configuration) --logger:"trx;LogFileName=$(Agent.BuildDirectory)/TestResults/$(name).trx"
       displayName: Test Project
 
     - task: PublishTestResults@2
