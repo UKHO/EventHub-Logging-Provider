@@ -35,7 +35,7 @@ stages:
 
     - script: |
         echo $(Agent.BuildDirectory)
-        echo pwd
+        pwd
         dotnet test $(solution) --no-build -c $(configuration) --logger:trx
       displayName: Test Project
 
