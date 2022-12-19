@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <PackageProjectUrl>https://github.com/UKHO/EventHub-Logging-Provider</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>UK Hydrographic Office</Authors>
@@ -10,7 +10,7 @@
     <PackageId>UKHO.Logging.EventHubLogProvider</PackageId>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net461|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <DocumentationFile>docs\Technical Documentation\UKHO.Logging.EventHubLogProvider.xml</DocumentationFile>
   </PropertyGroup>
 
