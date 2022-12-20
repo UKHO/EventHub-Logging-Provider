@@ -4,7 +4,7 @@ The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.
 
 ## Package Upgrades
 
-When doing work on this package, <span style="font-size:20px">_**make sure**_</span> manually the packages in nuget for any that are deprecated. 
+When doing work on this package, <span style="font-size:50px">_**make sure**_</span> to manually check the packages in Nuget for any that are deprecated. 
 
 This package does not have an NVD checker in its pipeline, it was previously assumed that services which pulled in this package would run the
 NVD checker on any dependencies the package had but this is not the case.
