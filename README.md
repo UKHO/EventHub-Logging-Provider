@@ -12,7 +12,7 @@ NVD checker on any dependencies the package had but this is not the case.
 This resulted in a deprecated package with a security vulnerability going undetected, and being discovered during the manual upgrade
 to .NET 6.0.
 
-Until an NVD checker is put in place, _**ensure**_ that packages are checked for deprecated versions to avoid any further vulnerabilities.
+Until an NVD checker is put in place, please _**ensure**_ that packages are checked for deprecated versions to avoid any further vulnerabilities.
 
 ## Getting Started
 
