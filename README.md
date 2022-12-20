@@ -9,7 +9,7 @@ When doing work on this package, _**make sure**_ to manually the packages in nug
 This package does not have an NVD checker in its pipeline, it was previously assumed that services which pulled in this package would run the
 NVD checker on any dependencies the package had but this is not the case.
 
-This resulted in a deprecated package with a security vulnerability going undetected, and being discovered during the manual upgrade
+This resulted in a deprecated package with a security vulnerability going undetected, and only being discovered during a manual upgrade
 to .NET 6.0.
 
 Until an NVD checker is put in place, please _**ensure**_ that packages are checked for deprecated versions to avoid any further vulnerabilities.
