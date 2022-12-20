@@ -2,11 +2,9 @@
 
 The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.Logging.Abstractions. Logs are sent to Event Hub as a JSON message. The EventHubLogProvider provides a number of standard properties to enrich every log message, and provides a mechanism to add application specific custom properties to logs.
 
-## Getting Started
+## Package Upgrades
 
-### Package Upgrades
-
-When doing work on this package, **make sure** to manually the packages in nuget for any that are deprecated. 
+When doing work on this package, _**make sure**_ to manually the packages in nuget for any that are deprecated. 
 
 This package does not have an NVD checker in its pipeline, it was previously assumed that services which pulled in this package would run the
 NVD checker on any dependencies the package had but this is not the case.
@@ -14,7 +12,10 @@ NVD checker on any dependencies the package had but this is not the case.
 This resulted in a deprecated package with a security vulnerability going undetected, and being discovered during the manual upgrade
 to .NET 6.0.
 
-Until an NVD checker is put in place, **ensure** that packages are checked for deprecated versions to avoid any further vulnerabilities.
+Until an NVD checker is put in place, _**ensure**_ that packages are checked for deprecated versions to avoid any further vulnerabilities.
+
+## Getting Started
+
 ### Installation Guide
 
 This package is available from NuGet: UKHO.Logging.EventHubLogProvider
