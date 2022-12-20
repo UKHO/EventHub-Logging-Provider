@@ -4,6 +4,17 @@ The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.
 
 ## Getting Started
 
+### Package Upgrades
+
+When doing work on this package, **make sure** to manually the packages in nuget for any that are deprecated. 
+
+This package does not have an NVD checker in its pipeline, it was previously assumed that services which pulled in this package would run the
+NVD checker on any dependencies the package had but this is not the case.
+
+This resulted in a deprecated package with a security vulnerability going undetected, and being discovered during the manual upgrade
+to .NET 6.0.
+
+Until an NVD checker is put in place, **ensure** that packages are checked for deprecated versions to avoid any further vulnerabilities.
 ### Installation Guide
 
 This package is available from NuGet: UKHO.Logging.EventHubLogProvider
