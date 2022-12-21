@@ -4,7 +4,7 @@ variables:
   solution: UKHO.Logging.EventHubLogProvider.sln
   progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
   
-name: $(BuildDefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
+name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
 trigger: none
 
@@ -21,7 +21,7 @@ stages:
       displayName: 'Use .NET Core sdk'
       inputs:
         packageType: sdk
-        version: 3.1.x
+        version: 6.x
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
     - script: dotnet restore
@@ -33,7 +33,7 @@ stages:
     - script: dotnet build $(solution) -c $(configuration) --no-restore
       displayName: Build Project
 
-    - script: dotnet test $(solution) --no-build -c $(configuration) --logger:trx -r $(Agent.BuildDirectory)/TestResults 
+    - script: dotnet test $(solution) --no-build -c $(configuration) --logger:trx --results-directory $(Agent.BuildDirectory)/TestResults
       displayName: Test Project
 
     - task: PublishTestResults@2
