@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 
 using Microsoft.Azure.EventHubs;
 
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider

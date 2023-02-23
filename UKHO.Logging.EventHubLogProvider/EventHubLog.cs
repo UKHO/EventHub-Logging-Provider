@@ -42,7 +42,7 @@ namespace UKHO.Logging.EventHubLogProvider
                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                            ContractResolver = new NullPropertyResolver()
                        };
-            this.azureStorageBlobContainerBuilder = eventHubClientWrapper.AzureStorageBlobContainerBuilder;
+            azureStorageBlobContainerBuilder = eventHubClientWrapper.AzureStorageBlobContainerBuilder;
         }
 
         public async void Log(LogEntry logEntry)
@@ -69,7 +69,7 @@ namespace UKHO.Logging.EventHubLogProvider
                     jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
                 }
 
-                AzureStorageLoggingCheckResult azureStorageLoggingCheckResult = this.azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry, 1);
+                AzureStorageLoggingCheckResult azureStorageLoggingCheckResult = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry, 1);
 
                 switch (azureStorageLoggingCheckResult)
                 {
@@ -77,7 +77,7 @@ namespace UKHO.Logging.EventHubLogProvider
                         jsonLogEntry = logEntry.ToLongMessageWarning(settings);
                         break;
                     case AzureStorageLoggingCheckResult.LogWarningAndStoreMessage:
-                        var azureLogger = new AzureStorageEventLogger(this.azureStorageBlobContainerBuilder.BlobContainerClient);
+                        var azureLogger = new AzureStorageEventLogger(azureStorageBlobContainerBuilder.BlobContainerClient);
                         string blobFullName = azureLogger.GenerateBlobFullName(
                                                                                new AzureStorageBlobFullNameModel(azureLogger.GenerateServiceName(
                                                                                                                   logEntry.LogProperties.GetLogEntryPropertyValue("_Service"),
@@ -87,7 +87,7 @@ namespace UKHO.Logging.EventHubLogProvider
                         var azureStorageModel = new AzureStorageEventModel(blobFullName, jsonLogEntry);
                         var result = await azureLogger.StoreLogFileAsync(azureStorageModel);
 
-                        jsonLogEntry = result.ToJsonLogEntryString(this.azureStorageBlobContainerBuilder.AzureStorageLogProviderOptions, logEntry, settings);
+                        jsonLogEntry = result.ToJsonLogEntryString(azureStorageBlobContainerBuilder.AzureStorageLogProviderOptions, logEntry, settings);
                         break;
                 }
 
