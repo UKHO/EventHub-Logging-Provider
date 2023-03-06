@@ -1,15 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2015
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.Logging.EventHubLogProvider", "UKHO.Logging.EventHubLogProvider\UKHO.Logging.EventHubLogProvider.csproj", "{F1844B13-053E-412C-A4FD-68D8AC35BE43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.Logging.EventHubLogProvider", "UKHO.Logging.EventHubLogProvider\UKHO.Logging.EventHubLogProvider.csproj", "{F1844B13-053E-412C-A4FD-68D8AC35BE43}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EE74FFF2-8866-4494-8245-76552165C465}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{071DB479-EE00-43EA-9142-E6C3789F530F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.Logging.EventHubLogProviderTest", "UKHO.Logging.EventHubLogProviderTest\UKHO.Logging.EventHubLogProviderTest.csproj", "{1C800402-5E9D-4DC2-AE95-69BE92849D7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.Logging.EventHubLogProviderTest", "UKHO.Logging.EventHubLogProviderTest\UKHO.Logging.EventHubLogProviderTest.csproj", "{1C800402-5E9D-4DC2-AE95-69BE92849D7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{607EEA5A-B589-46DA-9DCF-4F4B180F6680}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
