@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2023,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -16,39 +16,56 @@
 // OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
+
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Enums;
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Extensions;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
     internal class EventHubLog : IEventHubLog
     {
+        private const int LogSerializationExceptionEventId = 7437;
+        private const string LogSerializationExceptionEventName = "LogSerializationException";
+
         private IEventHubClientWrapper eventHubClientWrapper;
+
         private readonly JsonSerializerSettings settings;
+        private readonly JsonSerializerSettings errorSettings;
+
         private readonly AzureStorageBlobContainerBuilder azureStorageBlobContainerBuilder;
 
-        public EventHubLog(IEventHubClientWrapper eventHubClientWrapper)
+        public EventHubLog(IEventHubClientWrapper eventHubClientWrapper, IEnumerable<JsonConverter> customConverters)
         {
             this.eventHubClientWrapper = eventHubClientWrapper;
             settings = new JsonSerializerSettings
                        {
                            Formatting = Formatting.Indented,
                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                           ContractResolver = new NullPropertyResolver()
+                           ContractResolver = new NullPropertyResolver(),
+                           Converters = customConverters.ToList()
                        };
+            errorSettings = new JsonSerializerSettings
+                            {
+                                Formatting = Formatting.Indented,
+                                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                                ContractResolver = settings.ContractResolver
+                            };
+
             azureStorageBlobContainerBuilder = eventHubClientWrapper.AzureStorageBlobContainerBuilder;
         }
 
         public async void Log(LogEntry logEntry)
         {
-
- 
             try
             {
                 string jsonLogEntry;
@@ -58,15 +75,15 @@ namespace UKHO.Logging.EventHubLogProvider
                 }
                 catch (Exception e)
                 {
-                    logEntry = new LogEntry()
+                    logEntry = new LogEntry
                                {
                                    Exception = e,
                                    Level = "Warning",
                                    MessageTemplate = "Log Serialization failed with exception",
                                    Timestamp = DateTime.UtcNow,
-                                   EventId = new EventId(7437)
+                                   EventId = new EventId(LogSerializationExceptionEventId, LogSerializationExceptionEventName)
                                };
-                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, settings);
+                    jsonLogEntry = JsonConvert.SerializeObject(logEntry, errorSettings);
                 }
 
                 AzureStorageLoggingCheckResult azureStorageLoggingCheckResult = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(jsonLogEntry, 1);

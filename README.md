@@ -4,7 +4,7 @@ The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.
 
 ## Package Upgrades
 
-When doing work on this package, _**make sure**_ to manually check the packages in Nuget for any that are deprecated. 
+When doing work on this package, _**make sure**_ to manually check the packages in Nuget for any that are deprecated.
 
 This package does not have an NVD checker in its pipeline, it was previously assumed that services which pulled in this package would run the
 NVD checker on any dependencies the package had but this is not the case.
@@ -205,6 +205,47 @@ Within a standard ASP .Net Core project, this provider is best added in the Star
                                                 };
                 config.ValidateConnectionString = true;
             });
+    }
+```
+
+## Customisation of Log Parameter Serialization
+
+The default log parameter serialization uses NewtonSoft.Net JsonConvert to serialize the log parameters to JSON. On occasion, it maybe desirable to customise the JSON produced to control how individual properties are serialized. This can be done by providing custom converters that extend the `Newtonsoft.Json.JsonConverter` class:
+
+```cs
+loggerFactory.AddEventHub(
+            config =>
+            {
+                ...
+                config.CustomLogSerializerConverters = new List<JsonConverter> { new VersionJsonConverter() };
+                ...
+            });
+```
+
+The JsonConverter must implement `WriteJson`, but the `ReadJson` method can be left unimplemented and the `CanRead` property can return false. The `CanConvert` method must only return true for the types that you wish to override the serialization of.  More details about custom converters can be found in the JsonConvert documentation <https://www.newtonsoft.com/json/help/html/CustomJsonConverter.htm>.
+
+```cs
+    public class VersionJsonConverter : JsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value is Version version)
+            {
+                writer.WriteValue($"{version.MajorVersion}.{version.MinorVersion}.{version.Build}.{version.Revision}");
+            }
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(Version);
+        }
+
+        public override bool CanRead => false;
     }
 ```
 

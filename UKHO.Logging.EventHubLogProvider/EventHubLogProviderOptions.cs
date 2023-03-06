@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2023,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -21,6 +21,8 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using Newtonsoft.Json;
+
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 using SystemEnvironment = System.Environment;
@@ -38,7 +40,6 @@ namespace UKHO.Logging.EventHubLogProvider
         public string Environment { get; set; }
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
-
         public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; set; }
 
         /// <summary>
@@ -49,6 +50,9 @@ namespace UKHO.Logging.EventHubLogProvider
         // ReSharper disable once RedundantDefaultMemberInitializer
         public bool ValidateConnectionString { get; set; } = false;
 
+        /// <summary>
+        ///     If set to "#MachineName", this will resolve to SystemEnvironment.MachineName at runtime.
+        /// </summary>
         public string NodeName
         {
             get => nodeName == HashMachineName ? SystemEnvironment.MachineName : nodeName;
@@ -56,6 +60,19 @@ namespace UKHO.Logging.EventHubLogProvider
         }
 
         public string Service { get; set; }
+
+        /// <summary>
+        ///     Generally, this property is optional and not required. These converters get applied to the log object serialization
+        ///     before the log is sent to EventHub. This allows customisation of the serialization of specific log parameter objects
+        ///     if required. For example, it maybe desirable to serialize an object's properties as a single string rather than
+        ///     individual properties. In the case of the Version object, 1.2.3.4 is sufficient and do not require the properties
+        ///     to be individual separated. Similarly, it maybe desirable to ommit some properties of some objects, so a serializer
+        ///     could be created that only includes required properties.
+        /// 
+        ///     These converters must be able to write (WriteJson must be fully implemented and CanWrite must return true). It is
+        ///     not necessary for the convert to implement ReadJson and CanRead may return false.
+        /// </summary>
+        public IEnumerable<JsonConverter> CustomLogSerializerConverters { get; set; } = new List<JsonConverter>();
 
         public void Validate()
         {
@@ -81,6 +98,18 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (MinimumLogLevels.ContainsKey(""))
                 throw new ArgumentException($"Parameter {nameof(MinimumLogLevels)} can not contain an empty key.", nameof(MinimumLogLevels));
+
+
+            if (CustomLogSerializerConverters==null)
+                throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not be null.");
+            
+            if (CustomLogSerializerConverters.Any(c => c == null))
+                throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not contain null entries.");
+            var badConverters = CustomLogSerializerConverters.Where(s => !s.CanWrite).ToList();
+            if (badConverters.Any())
+            {
+                throw new ArgumentException($"{nameof(CustomLogSerializerConverters)} must be able to write: {string.Join(",", badConverters.Select(c => c?.GetType().FullName??"null"))}");
+            }
 
             if (ValidateConnectionString)
                 ValidateConnection();
