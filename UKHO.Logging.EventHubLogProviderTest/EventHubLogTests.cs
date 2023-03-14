@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2023,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -19,12 +19,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using FakeItEasy;
+
 using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using NUnit.Framework;
+
 using UKHO.Logging.EventHubLogProvider;
 
 namespace UKHO.Logging.EventHubLogProviderTest
@@ -40,7 +45,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),
@@ -67,14 +72,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void TestSerializesJsonCorrctlyForCorrectLogEntry()
+        public void TestSerializesJsonCorrectlyForCorrectLogEntry()
         {
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),
@@ -105,7 +110,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),
@@ -141,7 +146,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
 
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),

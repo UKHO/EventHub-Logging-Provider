@@ -168,7 +168,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
             var template = GenerateTestMessage(1024 * 1024);
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
 
             var testLogEntry = new LogEntry
                                {
@@ -211,8 +211,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
-            string template = null;
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),
@@ -222,7 +221,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                    MessageTemplate = string.Empty, //find the size of the rest of the object so that we can create it exactly 1 mb
                                    Level = "LogLevel"
                                };
-            template = CreateMessageEqualTo1Mb(testLogEntry);
+            var template = CreateMessageEqualTo1Mb(testLogEntry);
             testLogEntry.MessageTemplate = template;
             eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
@@ -258,7 +257,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             byte[] sentBytes = null;
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
             var template = GenerateTestMessage(1024 * 512);
-            var eventHubLog = new EventHubLog(fakeEventHubClient);
+            var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
                                    EventId = new EventId(2),

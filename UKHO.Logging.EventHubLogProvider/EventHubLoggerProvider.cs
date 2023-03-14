@@ -1,4 +1,4 @@
-﻿// British Crown Copyright © 2018,
+﻿// British Crown Copyright © 2023,
 // All rights reserved.
 // 
 // You may not copy the Software, rent, lease, sub-license, loan, translate, merge, adapt, vary
@@ -19,8 +19,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Logging;
-
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
@@ -65,8 +63,8 @@ namespace UKHO.Logging.EventHubLogProvider
             var options = new EventHubLogProviderOptions();
             config(options);
             options.Validate();
-            loggerFactory.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
+            var eventHubClientWrapper = new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions);
+            loggerFactory.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(eventHubClientWrapper, options.CustomLogSerializerConverters)));
             return loggerFactory;
         }
 
@@ -76,8 +74,8 @@ namespace UKHO.Logging.EventHubLogProvider
             var options = new EventHubLogProviderOptions();
             config(options);
             options.Validate();
-            loggingBuilder.AddProvider(new EventHubLoggerProvider(options,
-                                                                 new EventHubLog(new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath,options.AzureStorageLogProviderOptions))));
+            var eventHubClientWrapper = new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions);
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(eventHubClientWrapper, options.CustomLogSerializerConverters)));
             return loggingBuilder;
         }
     }
