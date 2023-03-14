@@ -30,6 +30,29 @@ stages:
     - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
       displayName: Apply Version Number
 
+      
+    - task: CmdLine@1
+      displayName: "Run OWASP Dependency Checker"
+      inputs:
+        filename: "dependency-check.bat"
+        arguments: '--project "EventHubLogProvider - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
+
+    - task: PublishBuildArtifacts@1
+      displayName: "Publish Artifact: OWASP Dependency Checker Report"
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
+        ArtifactName: "OWASP Dependency Checker Report"
+
+    - task: PowerShell@1
+      displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
+      inputs:
+        scriptType: inlineScript
+        arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
+        inlineScript: |
+          param($ReportLocation)
+          Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
+  
+
     - script: dotnet build $(solution) -c $(configuration) --no-restore
       displayName: Build Project
 
