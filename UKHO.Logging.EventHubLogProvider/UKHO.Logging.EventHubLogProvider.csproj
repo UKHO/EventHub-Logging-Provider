@@ -4,6 +4,7 @@
     <TargetFrameworks>net6.0;netstandard2.0;net48</TargetFrameworks>
     <PackageProjectUrl>https://github.com/UKHO/EventHub-Logging-Provider</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Authors>UK Hydrographic Office</Authors>
     <Company>UK Hydrographic Office</Company>
     <Description>Log provider for Microsoft.Extensions.Logging to log to Azure EventHub</Description>
@@ -13,6 +14,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
     <DocumentationFile>docs\Technical Documentation\UKHO.Logging.EventHubLogProvider.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../readme.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
