@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Azure.Messaging.EventHubs;
 using Azure.Storage.Blobs;
 using FakeItEasy;
-using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -132,7 +132,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         public void Test_EventHubLog_MessageCancellation_CancelSuccessfully()
         {
             var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
-            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
+            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", AzureStorageEventLoggerTests.GenerateTestMessage(512 * 512));
             azureStorageLogger.StoreLogFile(azureStorageModel, true);
             var result = azureStorageLogger.CancelLogFileStoringOperation();
 
@@ -146,7 +146,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         public void Test_EventHubLog_MessageCancellation_CancelFailed()
         {
             var azureStorageLogger = new AzureStorageEventLogger(blobContainerClient);
-            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", GenerateTestMessage(512 * 512));
+            var azureStorageModel = new AzureStorageEventModel("test service - test environment/day/test.json", AzureStorageEventLoggerTests.GenerateTestMessage(512 * 512));
             azureStorageLogger.StoreLogFile(azureStorageModel, true);
             azureStorageLogger.NullifyTokenSource();
             var result = azureStorageLogger.CancelLogFileStoringOperation();
@@ -166,8 +166,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
-            var template = GenerateTestMessage(1024 * 1024);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
+            var template = AzureStorageEventLoggerTests.GenerateTestMessage(1024 * 1024);
             var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
 
             var testLogEntry = new LogEntry
@@ -210,7 +210,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
             var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
@@ -221,7 +221,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                    MessageTemplate = string.Empty, //find the size of the rest of the object so that we can create it exactly 1 mb
                                    Level = "LogLevel"
                                };
-            var template = CreateMessageEqualTo1Mb(testLogEntry);
+            var template = AzureStorageEventLoggerTests.CreateMessageEqualTo1Mb(testLogEntry);
             testLogEntry.MessageTemplate = template;
             eventHubLog.Log(testLogEntry);
             A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).MustHaveHappenedOnceExactly();
@@ -255,8 +255,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var testLogProperties = new Dictionary<string, object> { { "_Service", service }, { "_Environment", environment } };
             var testDateStamp = new DateTime(2002, 03, 04);
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
-            var template = GenerateTestMessage(1024 * 512);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
+            var template = AzureStorageEventLoggerTests.GenerateTestMessage(1024 * 512);
             var eventHubLog = new EventHubLog(fakeEventHubClient, Enumerable.Empty<JsonConverter>());
             var testLogEntry = new LogEntry
                                {
@@ -298,7 +298,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// </summary>
         /// <param name="size">The size</param>
         /// <returns>A message</returns>
-        private string GenerateTestMessage(int size)
+        private static string GenerateTestMessage(int size)
         {
             var charsPool = "ABCDEFGHJKLMNOPQRSTVUWXYZ1234567890";
             var charsArray = new char[size];
@@ -316,7 +316,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// </summary>
         /// <param name="entry">The entry</param>
         /// <returns>The size of the message</returns>
-        private int GetSizeOfJsonObject(LogEntry entry)
+        private static int GetSizeOfJsonObject(LogEntry entry)
         {
             return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entry,
                                                                       new JsonSerializerSettings
@@ -332,9 +332,9 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// </summary>
         /// <param name="entry">The entry model</param>
         /// <returns>The message template</returns>
-        private string CreateMessageEqualTo1Mb(LogEntry entry)
+        private static string CreateMessageEqualTo1Mb(LogEntry entry)
         {
-            return GenerateTestMessage(1024 * 1024 - GetSizeOfJsonObject(entry));
+            return AzureStorageEventLoggerTests.GenerateTestMessage(1024 * 1024 - AzureStorageEventLoggerTests.GetSizeOfJsonObject(entry));
         }
 
         #endregion

@@ -16,11 +16,11 @@
 // OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-
-using Microsoft.Azure.EventHubs;
-
+using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs.Producer;
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider
@@ -36,17 +36,12 @@ namespace UKHO.Logging.EventHubLogProvider
     [ExcludeFromCodeCoverage] // not testable as it's just a wrapper for EventHubClient
     internal class EventHubClientWrapper : IEventHubClientWrapper
     {
-        private EventHubClient eventHubClient;
+        private EventHubProducerClient eventHubClient;
         public AzureStorageBlobContainerBuilder AzureStorageBlobContainerBuilder { get; set; }
 
         public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath, AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
-            var connectionStringBuilder = new EventHubsConnectionStringBuilder(eventHubConnectionString)
-                                          {
-                                              EntityPath = eventHubEntityPath
-                                          };
-
-            eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
+            eventHubClient = new EventHubProducerClient(eventHubConnectionString, eventHubEntityPath);
             var azureStorageBlobContainerBuilder = new AzureStorageBlobContainerBuilder(azureStorageLogProviderOptions);
             azureStorageBlobContainerBuilder.Build();
             this.AzureStorageBlobContainerBuilder = azureStorageBlobContainerBuilder;
@@ -54,7 +49,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ReleaseUnmanagedResources()
         {
-            eventHubClient?.Close();
+            eventHubClient?.CloseAsync();
             eventHubClient = null;
         }
 
@@ -71,14 +66,14 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public Task SendAsync(EventData eventData)
         {
-            return eventHubClient.SendAsync(eventData);
+            return eventHubClient.SendAsync(new List<EventData> { eventData });
         }
 
         public void ValidateConnection()
         {
             try
             {
-                eventHubClient.GetRuntimeInformationAsync().Wait();
+                eventHubClient.GetPartitionIdsAsync().Wait();
             }
             catch (AggregateException e)
             {
