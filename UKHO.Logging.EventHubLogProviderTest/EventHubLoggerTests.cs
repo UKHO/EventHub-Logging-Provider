@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using NUnit.Framework;
 using UKHO.Logging.EventHubLogProvider;
 
@@ -232,8 +231,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
             A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
-            IEnumerable<KeyValuePair<string, object>> structuredData =
-                new FormattedLogValues("Message with {Property1} and {Property2} and a escaped C# keyword name {@var}", "Value 1", "Value 2", "Var value");
+            var formattedLogEntry = "Message with {Property1} and {Property2} and a escaped C# keyword name {@var}";
+            var structuredData = new Dictionary<string, object>
+                                 {
+                                     {"Property1", "Value 1" },
+                                     {"Property2", "Value 2" },
+                                     {"@var", "Var value" },
+                                     {"{OriginalFormat}", formattedLogEntry },
+                                 };
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(",", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
             CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
@@ -251,8 +256,13 @@ namespace UKHO.Logging.EventHubLogProviderTest
             A.CallTo(() => fakeEventHubLog.Log(A<LogEntry>.Ignored)).Invokes((LogEntry l) => loggedEntry = l);
 
             var eventHubLogger = CreateTestEventHubLogger(LogLevel.Information, LogLevel.Information, "UKHO.TestClass", fakeEventHubLog);
-            IEnumerable<KeyValuePair<string, object>> structuredData =
-                new FormattedLogValues("Message with {Property1} and {Property1} and a escaped C# keyword name {@var}", "Value 1", "Value 2", "Var value");
+            var formattedLogEntry = "Message with {Property1} and {Property1} and a escaped C# keyword name {@var}";
+            var structuredData = new Dictionary<string, object>
+                                 {
+                                     {"Property1", new[] { "Value 1", "Value 2" } },
+                                     {"@var", "Var value" },
+                                     {"{OriginalFormat}", formattedLogEntry },
+                                 };
             eventHubLogger.Log(LogLevel.Information, 123, structuredData, null, (s, e) => string.Join(",", s.Select(kv => $"{kv.Key}:{kv.Value}")));
 
             CollectionAssert.DoesNotContain(loggedEntry.LogProperties.Keys, "MessageTemplate");
