@@ -151,12 +151,18 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestConfigureLoggingLevelsForDifferentNamespaces()
         {
-            var options = new EventHubLogProviderOptions() { DefaultMinimumLogLevel = LogLevel.Critical };
-            options.MinimumLogLevels["UKHO"] = LogLevel.Trace;
-            options.MinimumLogLevels["UKHO.Logging"] = LogLevel.Information;
-            options.MinimumLogLevels["UKHO.Logging.Event"] = LogLevel.None;
-            options.MinimumLogLevels["UKHO.Security"] = LogLevel.Debug;
-            options.MinimumLogLevels["AnImportant\\Path"] = LogLevel.Warning;
+            var options = new EventHubLogProviderOptions
+                          {
+                              DefaultMinimumLogLevel = LogLevel.Critical,
+                              MinimumLogLevels =
+                              {
+                                  ["UKHO"] = LogLevel.Trace,
+                                  ["UKHO.Logging"] = LogLevel.Information,
+                                  ["UKHO.Logging.Event"] = LogLevel.None,
+                                  ["UKHO.Security"] = LogLevel.Debug,
+                                  ["AnImportant\\Path"] = LogLevel.Warning
+                              }
+                          };
 
             Assert.AreEqual(LogLevel.Information, options.GetMinimumLogLevelForCategory("UKHO.Logging.EventLogger"));
             Assert.AreEqual(LogLevel.Debug, options.GetMinimumLogLevelForCategory("UKHO.Security.Authentication.AnAuthenticator"));
