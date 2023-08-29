@@ -97,7 +97,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging
                     cancellationTokenSource.Cancel();
                     return AzureStorageEventLogCancellationResult.Successful;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return AzureStorageEventLogCancellationResult.CancellationFailed;
                 }
@@ -119,7 +119,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging
             if (withCancellation)
                 cancellationToken = cancellationTokenSource.Token;
 
-            Response<BlobContentInfo> uploadBlobResponse = null;
+            Response<BlobContentInfo> uploadBlobResponse;
             try
             {
                 uploadBlobResponse = containerClient.UploadBlob(model.FileFullName, binaryData, cancellationToken);
@@ -163,7 +163,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging
             if (withCancellation)
                 cancellationToken = cancellationTokenSource.Token;
 
-            Response<BlobContentInfo> uploadBlobResponse = null;
+            Response<BlobContentInfo> uploadBlobResponse;
             try
             {
                 uploadBlobResponse = await containerClient.UploadBlobAsync(model.FileFullName, binaryData, cancellationToken);

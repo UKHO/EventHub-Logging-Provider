@@ -18,10 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using Azure.Messaging.EventHubs;
 using FakeItEasy;
 
-using Microsoft.Azure.EventHubs;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -40,7 +39,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient, new JsonConverter[] { new VersionJsonConverter() });
             var testLogEntry = new LogEntry
@@ -70,7 +69,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient, new JsonConverter[] { new BadVersionJsonConveter() });
             var testLogEntry = new LogEntry
@@ -108,7 +107,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var fakeEventHubClient = A.Fake<IEventHubClientWrapper>();
 
             byte[] sentBytes = null;
-            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.Array);
+            A.CallTo(() => fakeEventHubClient.SendAsync(A<EventData>.Ignored)).Invokes((EventData ed) => sentBytes = ed.Body.ToArray());
 
             var eventHubLog = new EventHubLog(fakeEventHubClient, new JsonConverter[] { new ReallyBadJsonConveter() });
             var testLogEntry = new LogEntry
