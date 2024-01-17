@@ -17,25 +17,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Logging;
-
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.EventHubLogProvider
 {
     internal class EventHubLogger : ILogger
     {
         private const string OriginalFormatPropertyName = "{OriginalFormat}";
+        private readonly Action<IDictionary<string, object>> additionalValuesProvider;
+        private readonly string categoryName;
+        private readonly string environment;
         private readonly IEventHubLog eventHubLog;
         private readonly LogLevel minimumLogLevel;
-        private readonly string environment;
-        private readonly string categoryName;
-        private readonly string system;
-        private readonly string service;
         private readonly string nodeName;
-        private readonly Action<IDictionary<string, object>> additionalValuesProvider;
+        private readonly List<object> scopes;
+        private readonly string service;
+        private readonly string system;
 
         internal EventHubLogger(IEventHubLog eventHubLog,
                                 string categoryName,
@@ -48,6 +46,7 @@ namespace UKHO.Logging.EventHubLogProvider
             system = options.System;
             service = options.Service;
             nodeName = options.NodeName;
+            scopes = new List<object>();
             additionalValuesProvider = options.AdditionalValuesProvider;
         }
 
@@ -71,6 +70,26 @@ namespace UKHO.Logging.EventHubLogProvider
                 {
                     result["LoggingError"] = $"additionalValuesProvider throw exception: {e.Message}";
                     result["LoggingErrorException"] = e;
+                }
+
+                // Allow scopes to override additional values
+                foreach (var scope in scopes)
+                {
+                    switch (scope)
+                    {
+                        case KeyValuePair<string, object> kv:
+                            result[kv.Key] = kv.Value;
+                            break;
+                        case IEnumerable<KeyValuePair<string, object>> list:
+                        {
+                            foreach (var kv in list)
+                            {
+                                result[kv.Key] = kv.Value;
+                            }
+
+                            break;
+                        }
+                    }
                 }
 
                 var messageTemplate = "";
@@ -130,10 +149,27 @@ namespace UKHO.Logging.EventHubLogProvider
             return logLevel >= minimumLogLevel;
         }
 
-        [ExcludeFromCodeCoverage] // nothing to test
         public IDisposable BeginScope<TState>(TState state)
         {
-            return new EmptyDisposable();
+            scopes.Add(state);
+            return new Scope<TState>(scopes, state);
+        }
+
+        private class Scope<TState> : IDisposable
+        {
+            private readonly List<object> scopes;
+            private readonly TState state;
+
+            public Scope(List<object> scopes, TState state)
+            {
+                this.scopes = scopes;
+                this.state = state;
+            }
+
+            public void Dispose()
+            {
+                scopes.Remove(state);
+            }
         }
     }
 }
