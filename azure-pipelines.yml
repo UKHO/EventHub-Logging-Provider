@@ -94,6 +94,8 @@ stages:
             
 - stage: Nuget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  variables:
+    - group: nuget-deployment-vars
   jobs:
     - deployment: Publish_To_NuGet
       displayName: Publish To NuGet
