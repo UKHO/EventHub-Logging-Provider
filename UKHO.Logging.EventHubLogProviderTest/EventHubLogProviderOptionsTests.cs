@@ -17,7 +17,11 @@
 
 using System;
 
+using Azure.Core;
+
 using Microsoft.Extensions.Logging;
+
+using Moq;
 
 using NUnit.Framework;
 
@@ -148,12 +152,22 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestMachineNameMacroOnGet()
         {
+            //Arrange
             var myComputerName = Environment.MachineName;
             var eventHubLogProviderOptions = new EventHubLogProviderOptions();
-            Assert.AreEqual(myComputerName, eventHubLogProviderOptions.NodeName);
 
-            eventHubLogProviderOptions.NodeName = "ExplicitValue";
-            Assert.AreEqual("ExplicitValue", eventHubLogProviderOptions.NodeName);
+            //Assert
+            Assert.AreEqual(myComputerName, eventHubLogProviderOptions.NodeName);
+        }
+
+        [Test]
+        public void TestNodeNameReturnsSetNameOnGet()
+        {
+            //Arrange
+            options.NodeName = "ExplicitValue";
+
+            //Assert
+            Assert.AreEqual("ExplicitValue", options.NodeName);
         }
 
         [Test]
@@ -176,6 +190,71 @@ namespace UKHO.Logging.EventHubLogProviderTest
                                 Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path"));
                                 Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path\\WithChild"));
                             });
+        }
+
+        [Test]
+        public void ManagedIdentifyCorrectSettings_Validate_Successful()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            options.UseManagedIdentity = true;
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+        }
+
+        [Test]
+        public void ManagedIdentityMissingFQNamespace_Validate_ThrowException()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            options.UseManagedIdentity = true;
+            options.TokenCredential = tokenCredential.Object;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.AreEqual("EventHubFullyQualifiedNamespace", argumentException.ParamName);
+            Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubFullyQualifiedNamespace must be set to a valid value"));
+        }
+
+        [Test]
+        public void ManagedIdentityMissingTokenCredentials_Validate_ThrowException()
+        {
+            //Arrange
+            options.UseManagedIdentity = true;
+            options.EventHubFullyQualifiedNamespace = "Correct";
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.AreEqual("TokenCredential", argumentException.ParamName);
+            Assert.That(argumentException.Message, Does.StartWith("Parameters TokenCredential must be set to a valid value"));
+        }
+
+        [Test]
+        public void ManagedIdentifyMissingEventHubMissingRestOfConfig_Validate_ThrowException()
+        {
+            options = new EventHubLogProviderOptions();
+            var tokenCredential = new Mock<TokenCredential>();
+            options.UseManagedIdentity = true;
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.AreEqual("EventHubEntityPath,Environment,System,Service", argumentException.ParamName);
+            Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubEntityPath,Environment,System,Service must be set to a valid value"));
         }
     }
 }
