@@ -242,6 +242,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void ManagedIdentifyMissingEventHubMissingRestOfConfig_Validate_ThrowException()
         {
+            //Arrange
             options = new EventHubLogProviderOptions();
             var tokenCredential = new Mock<TokenCredential>();
             options.UseManagedIdentity = true;
