@@ -95,7 +95,6 @@ namespace UKHO.Logging.EventHubLogProvider
                 if (string.IsNullOrEmpty(EventHubConnectionString))
                     errors.Add(nameof(EventHubConnectionString));
             }
-            
             if (string.IsNullOrEmpty(EventHubEntityPath))
                 errors.Add(nameof(EventHubEntityPath));
             if (string.IsNullOrEmpty(Environment))
@@ -135,7 +134,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ValidateConnection()
         {
-            var eventHubClientWrapper = UseManagedIdentity ?
+            var eventHubClientWrapper = (UseManagedIdentity) ?
                  new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions) :
                  new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions);
 
