@@ -18,9 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Azure.Core;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
@@ -50,6 +49,12 @@ namespace UKHO.Logging.EventHubLogProvider
         // ReSharper disable once RedundantDefaultMemberInitializer
         public bool ValidateConnectionString { get; set; } = false;
 
+        public bool UseManagedIdentity { get; set; } = false;
+
+        public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
+
+        public TokenCredential TokenCredential { get; set; } = null;
+
         /// <summary>
         ///     If set to "#MachineName", this will resolve to SystemEnvironment.MachineName at runtime.
         /// </summary>
@@ -78,8 +83,18 @@ namespace UKHO.Logging.EventHubLogProvider
         {
             var errors = new List<string>();
 
-            if (string.IsNullOrEmpty(EventHubConnectionString))
-                errors.Add(nameof(EventHubConnectionString));
+            if (UseManagedIdentity)
+            {
+                if (string.IsNullOrEmpty(EventHubFullyQualifiedNamespace))
+                    errors.Add(nameof(EventHubFullyQualifiedNamespace));
+                if (TokenCredential is null)
+                    errors.Add(nameof(TokenCredential));
+            }        
+            else
+            {
+                if (string.IsNullOrEmpty(EventHubConnectionString))
+                    errors.Add(nameof(EventHubConnectionString));
+            }
             if (string.IsNullOrEmpty(EventHubEntityPath))
                 errors.Add(nameof(EventHubEntityPath));
             if (string.IsNullOrEmpty(Environment))
@@ -92,6 +107,7 @@ namespace UKHO.Logging.EventHubLogProvider
                 errors.Add(nameof(NodeName));
             if (AdditionalValuesProvider == null)
                 errors.Add(nameof(AdditionalValuesProvider));
+            
 
             if (errors.Any())
                 throw new ArgumentException($"Parameters {string.Join(",", errors)} must be set to a valid value.", string.Join(",", errors));
@@ -117,19 +133,21 @@ namespace UKHO.Logging.EventHubLogProvider
 
         private void ValidateConnection()
         {
-            var eventHubClientWrapper = new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
+            var eventHubClientWrapper = (UseManagedIdentity) ?
+                 new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions) :
+                 new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions);
+
             eventHubClientWrapper.ValidateConnection();
         }
-
         public LogLevel GetMinimumLogLevelForCategory(string categoryName)
         {
             var categoryTokens = SplitKey(categoryName);
             var configuration = MinimumLogLevels
-                .Select(kv => new KeyValuePair<string[], LogLevel>(SplitKey(kv.Key), kv.Value))
-                .Where(kv =>
-                       {
-                           return kv.Key.Select((k, i) => (k, i))
-                               .All(k => k.Item2 < categoryTokens.Length && k.Item1 == categoryTokens[k.Item2]);
+            .Select(kv => new KeyValuePair<string[], LogLevel>(SplitKey(kv.Key), kv.Value))
+            .Where(kv =>
+            {
+                return kv.Key.Select((k, i) => (k, i))
+                .All(k => k.Item2 < categoryTokens.Length && k.Item1 == categoryTokens[k.Item2]);
                        })
                 .OrderByDescending(kv => kv.Key.Length)
                 .Select(kv => kv.Value)
