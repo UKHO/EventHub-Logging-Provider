@@ -152,20 +152,22 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var eventHubLogProviderOptions = new EventHubLogProviderOptions();
             Assert.AreEqual(myComputerName, eventHubLogProviderOptions.NodeName);
 
-            eventHubLogProviderOptions.NodeName = "ExplictValue";
-            Assert.AreEqual("ExplictValue", eventHubLogProviderOptions.NodeName);
+            eventHubLogProviderOptions.NodeName = "ExplicitValue";
+            Assert.AreEqual("ExplicitValue", eventHubLogProviderOptions.NodeName);
         }
 
         [Test]
         public void TestConfigureLoggingLevelsForDifferentNamespaces()
         {
+            //Arrange
             options.DefaultMinimumLogLevel = LogLevel.Critical;
             options.MinimumLogLevels.Add("UKHO", LogLevel.Trace);
             options.MinimumLogLevels.Add("UKHO.Logging", LogLevel.Information);
             options.MinimumLogLevels.Add("UKHO.Logging.Event", LogLevel.None);
             options.MinimumLogLevels.Add("UKHO.Security", LogLevel.Debug);
             options.MinimumLogLevels.Add("AnImportant\\Path", LogLevel.Warning);
-
+            
+            //Assert
             Assert.Multiple(() =>
                             {
                                 Assert.AreEqual(LogLevel.Information, options.GetMinimumLogLevelForCategory("UKHO.Logging.EventLogger"));
