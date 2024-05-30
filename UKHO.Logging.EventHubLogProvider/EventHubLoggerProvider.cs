@@ -60,11 +60,19 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         public static ILoggerFactory AddEventHub(this ILoggerFactory loggerFactory, Action<EventHubLogProviderOptions> config)
         {
-           
-            (EventHubClientWrapper wrapper, EventHubLogProviderOptions options) = GetValidEventHubClient(config);
+            var (wrapper, options) = GetValidEventHubClient(config);
 
             loggerFactory.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(wrapper, options.CustomLogSerializerConverters)));
             return loggerFactory;
+        }
+
+        [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
+        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<EventHubLogProviderOptions> config)
+        {
+            var (wrapper, options) = GetValidEventHubClient(config);
+
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(wrapper, options.CustomLogSerializerConverters)));
+            return loggingBuilder;
         }
 
         private static (EventHubClientWrapper, EventHubLogProviderOptions) GetValidEventHubClient(Action<EventHubLogProviderOptions> config)
@@ -73,18 +81,16 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
 
-            return (options.UseManagedIdentity ?
-                             new EventHubClientWrapper(options.EventHubFullyQualifiedNamespace, options.EventHubEntityPath, options.TokenCredential, options.AzureStorageLogProviderOptions) :
-                             new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions), options);
-        }
+            var wrapper = options.UseManagedIdentity
+                ? new EventHubClientWrapper(options.EventHubFullyQualifiedNamespace,
+                                            options.EventHubEntityPath,
+                                            options.TokenCredential,
+                                            options.AzureStorageLogProviderOptions)
+                : new EventHubClientWrapper(options.EventHubConnectionString,
+                                            options.EventHubEntityPath,
+                                            options.AzureStorageLogProviderOptions);
 
-        [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
-        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<EventHubLogProviderOptions> config)
-        {
-            (EventHubClientWrapper wrapper, EventHubLogProviderOptions options) = GetValidEventHubClient(config);
-
-            loggingBuilder.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(wrapper, options.CustomLogSerializerConverters)));
-            return loggingBuilder;
+            return (wrapper, options);
         }
     }
 }
