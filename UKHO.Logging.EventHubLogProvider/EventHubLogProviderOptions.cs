@@ -51,9 +51,9 @@ namespace UKHO.Logging.EventHubLogProvider
 
         public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
 
-       // public bool UseManagedIdentity { get; set; } = false;
-
         public TokenCredential TokenCredential { get; set; } = null;
+
+        public bool ValidateConnection { get; set; } = false;
 
         /// <summary>
         ///     If set to "#MachineName", this will resolve to SystemEnvironment.MachineName at runtime.
@@ -126,19 +126,19 @@ namespace UKHO.Logging.EventHubLogProvider
                 throw new ArgumentException($"{nameof(CustomLogSerializerConverters)} must be able to write: {string.Join(",", badConverters.Select(c => c?.GetType().FullName??"null"))}");
             }
 
-            if (ValidateConnectionString)
-                ValidateConnection();
+            if (ValidateConnectionString || ValidateConnection)
+                ValidateConnectionToEventHub();
         }
 
         public bool IsUsingManagedIdentity()
             =>  !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
 
   
-        private void ValidateConnection()
+        private void ValidateConnectionToEventHub()
         {
             var eventHubClientWrapper = IsUsingManagedIdentity() ?
-                 new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions) :
-                 new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions);
+                 new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions) :
+                 new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
 
             eventHubClientWrapper.ValidateConnection();
         }
