@@ -47,11 +47,11 @@ namespace UKHO.Logging.EventHubLogProvider
         /// </summary>
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once RedundantDefaultMemberInitializer
-        public bool ValidateConnectionString { get; set; } = false;
-
-        public bool UseManagedIdentity { get; set; } = false;
+        public bool ValidateConnectionString { get; set; } = false;       
 
         public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
+
+       // public bool UseManagedIdentity { get; set; } = false;
 
         public TokenCredential TokenCredential { get; set; } = null;
 
@@ -83,10 +83,8 @@ namespace UKHO.Logging.EventHubLogProvider
         {
             var errors = new List<string>();
 
-            if (UseManagedIdentity)
+            if (IsUsingManagedIdentity())
             {
-                if (string.IsNullOrEmpty(EventHubFullyQualifiedNamespace))
-                    errors.Add(nameof(EventHubFullyQualifiedNamespace));
                 if (TokenCredential is null)
                     errors.Add(nameof(TokenCredential));
             }        
@@ -131,9 +129,13 @@ namespace UKHO.Logging.EventHubLogProvider
                 ValidateConnection();
         }
 
+        public bool IsUsingManagedIdentity()
+            =>  !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
+
+  
         private void ValidateConnection()
         {
-            var eventHubClientWrapper = (UseManagedIdentity) ?
+            var eventHubClientWrapper = IsUsingManagedIdentity() ?
                  new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions) :
                  new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions);
 

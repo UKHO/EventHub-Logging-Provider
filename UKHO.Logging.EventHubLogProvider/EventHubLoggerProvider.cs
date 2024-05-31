@@ -73,7 +73,7 @@ namespace UKHO.Logging.EventHubLogProvider
             config(options);
             options.Validate();
 
-            return (options.UseManagedIdentity ?
+            return (options.IsUsingManagedIdentity() ?
                              new EventHubClientWrapper(options.EventHubFullyQualifiedNamespace, options.EventHubEntityPath, options.TokenCredential, options.AzureStorageLogProviderOptions) :
                              new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions), options);
         }
