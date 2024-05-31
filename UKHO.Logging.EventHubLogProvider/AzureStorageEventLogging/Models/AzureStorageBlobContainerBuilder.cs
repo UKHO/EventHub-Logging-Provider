@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Blobs;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Azure.Storage.Blobs;
 
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
@@ -23,6 +25,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         /// <param name="azureStorageLogProviderOptions">The log provider options</param>
         /// <param name="blobContainerClient">The blob client</param>
+        [ExcludeFromCodeCoverage] // Used by Tests Only...
         public AzureStorageBlobContainerBuilder(AzureStorageLogProviderOptions azureStorageLogProviderOptions, BlobContainerClient blobContainerClient)
         {
             AzureStorageLogProviderOptions = azureStorageLogProviderOptions;
@@ -37,8 +40,12 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         public void Build()
         {
-            if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.AzureStorageLoggerEnabled == true)
-                BlobContainerClient = new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
+            if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.AzureStorageLoggerEnabled)
+            {
+                BlobContainerClient = AzureStorageLogProviderOptions.IsUsingManagedIdentity()
+                    ? new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageBlobContainerUri, AzureStorageLogProviderOptions.AzureStorageCredential)
+                    : new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
+            }
         }
     }
 }
