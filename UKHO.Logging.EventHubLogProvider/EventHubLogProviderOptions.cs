@@ -107,7 +107,7 @@ namespace UKHO.Logging.EventHubLogProvider
                 errors.Add(nameof(AdditionalValuesProvider));
             
 
-            if (errors.Any())
+            if (errors.Count != 0)
                 throw new ArgumentException($"Parameters {string.Join(",", errors)} must be set to a valid value.", string.Join(",", errors));
 
             if (MinimumLogLevels.ContainsKey(""))
@@ -119,8 +119,9 @@ namespace UKHO.Logging.EventHubLogProvider
             
             if (CustomLogSerializerConverters.Any(c => c == null))
                 throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not contain null entries.");
+            
             var badConverters = CustomLogSerializerConverters.Where(s => !s.CanWrite).ToList();
-            if (badConverters.Any())
+            if (badConverters.Count != 0)
             {
                 throw new ArgumentException($"{nameof(CustomLogSerializerConverters)} must be able to write: {string.Join(",", badConverters.Select(c => c?.GetType().FullName??"null"))}");
             }
