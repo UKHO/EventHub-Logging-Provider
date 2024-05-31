@@ -196,8 +196,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         public void ManagedIdentifyCorrectSettings_Validate_Successful()
         {
             //Arrange
-            var tokenCredential = new Mock<TokenCredential>();
-            options.UseManagedIdentity = true;
+            var tokenCredential = new Mock<TokenCredential>();           
             options.EventHubFullyQualifiedNamespace = "Correct";
             options.TokenCredential = tokenCredential.Object;
 
@@ -205,29 +204,11 @@ namespace UKHO.Logging.EventHubLogProviderTest
             //Assert
             Assert.DoesNotThrow(() => options.Validate());
         }
-
-        [Test]
-        public void ManagedIdentityMissingFQNamespace_Validate_ThrowException()
-        {
-            //Arrange
-            var tokenCredential = new Mock<TokenCredential>();
-            options.UseManagedIdentity = true;
-            options.TokenCredential = tokenCredential.Object;
-
-            //Act
-            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
-
-            //Assert
-            Assert.NotNull(argumentException);
-            Assert.AreEqual("EventHubFullyQualifiedNamespace", argumentException.ParamName);
-            Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubFullyQualifiedNamespace must be set to a valid value"));
-        }
-
+               
         [Test]
         public void ManagedIdentityMissingTokenCredentials_Validate_ThrowException()
         {
-            //Arrange
-            options.UseManagedIdentity = true;
+            //Arrange          
             options.EventHubFullyQualifiedNamespace = "Correct";
 
             //Act
@@ -244,8 +225,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         {
             //Arrange
             options = new EventHubLogProviderOptions();
-            var tokenCredential = new Mock<TokenCredential>();
-            options.UseManagedIdentity = true;
+            var tokenCredential = new Mock<TokenCredential>();       
             options.EventHubFullyQualifiedNamespace = "Correct";
             options.TokenCredential = tokenCredential.Object;
 

@@ -85,13 +85,5 @@ namespace UKHO.Logging.EventHubLogProvider
                              new EventHubClientWrapper(options.EventHubFullyQualifiedNamespace, options.EventHubEntityPath, options.TokenCredential, options.AzureStorageLogProviderOptions) :
                              new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions), options);
         }
-
-        [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
-        public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<EventHubLogProviderOptions> config)
-        {
-            (EventHubClientWrapper wrapper, EventHubLogProviderOptions options) = GetValidEventHubClient(config);
-
-            return (wrapper, options);
-        }
     }
 }
