@@ -16,15 +16,10 @@
 // OF SUCH DAMAGE.
 
 using System;
-
 using Azure.Core;
-
 using Microsoft.Extensions.Logging;
-
 using Moq;
-
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider;
 
 namespace UKHO.Logging.EventHubLogProviderTest
@@ -193,7 +188,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void ManagedIdentifyCorrectSettings_Validate_Successful()
+        public void ManagedIdentityCorrectSettings_Validate_Successful()
         {
             //Arrange
             var tokenCredential = new Mock<TokenCredential>();           
@@ -221,7 +216,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void ManagedIdentifyMissingEventHubMissingRestOfConfig_Validate_ThrowException()
+        public void ManagedIdentityMissingEventHubMissingRestOfConfig_Validate_ThrowException()
         {
             //Arrange
             options = new EventHubLogProviderOptions();
