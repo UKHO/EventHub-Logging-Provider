@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProviderTest
 {
@@ -28,6 +29,8 @@ namespace UKHO.Logging.EventHubLogProviderTest
     public class EventHubLogProviderOptionsTests
     {
         private EventHubLogProviderOptions options;
+        private const string _validUriString = "https://test.com/";
+        private const string _invalidUriString = "-test";
 
         [SetUp]
         public void SetUp()
@@ -191,7 +194,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         public void ManagedIdentityCorrectSettings_Validate_Successful()
         {
             //Arrange
-            var tokenCredential = new Mock<TokenCredential>();           
+            var tokenCredential = new Mock<TokenCredential>();
             options.EventHubFullyQualifiedNamespace = "Correct";
             options.TokenCredential = tokenCredential.Object;
 
@@ -199,7 +202,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             //Assert
             Assert.DoesNotThrow(() => options.Validate());
         }
-               
+
         [Test]
         public void ManagedIdentityMissingTokenCredentials_Validate_ThrowException()
         {
@@ -216,11 +219,11 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void ManagedIdentityMissingEventHubMissingRestOfConfig_Validate_ThrowException()
+        public void ManagedIdentityMissingRestOfConfig_Validate_ThrowException()
         {
             //Arrange
             options = new EventHubLogProviderOptions();
-            var tokenCredential = new Mock<TokenCredential>();       
+            var tokenCredential = new Mock<TokenCredential>();
             options.EventHubFullyQualifiedNamespace = "Correct";
             options.TokenCredential = tokenCredential.Object;
 
@@ -232,5 +235,80 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.AreEqual("EventHubEntityPath,Environment,System,Service", argumentException.ParamName);
             Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubEntityPath,Environment,System,Service must be set to a valid value"));
         }
+
+        #region AuthenticationMismatchTests
+
+        // Both EH and SA uses ID means OK
+        
+        [Test]
+        public void ManagedIdentityIsUsedForBothEventHubAndStorageAccount_Validate_Successful()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+        }
+
+        // EH uses ID but not SA means Exception
+        
+        [Test]
+        public void EventHubUsesManagedIdentityButStorageAccountDoesNot_Validate_ThrowException()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, true, "string", "string");
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.That(argumentException.Message, Does.StartWith("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
+        }
+        
+        // SA uses ID but not EH means Exception
+        
+        [Test]
+        public void StorageAccountUsesManagedIdentityButEventHubDoesNot_Validate_ThrowException()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            options.EventHubConnectionString = "Correct";
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.That(argumentException.Message, Does.StartWith("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
+        }
+
+        // Both EH and SA uses not ID means OK
+
+        [Test]
+        public void ManagedIdentityIsNotUsedForBothEventHubAndStorageAccount_Validate_Successful()
+        {
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, true, "string", "string");
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+        } 
+
+        #endregion
     }
 }
