@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
@@ -82,17 +83,25 @@ namespace UKHO.Logging.EventHubLogProvider
         public void Validate()
         {
             var errors = new List<string>();
+            bool bothUsingManagedIdentity = true;
 
             if (IsUsingManagedIdentity())
             {
                 if (TokenCredential is null)
                     errors.Add(nameof(TokenCredential));
+                if (AzureStorageLogProviderOptions != null && !AzureStorageLogProviderOptions.IsUsingManagedIdentity())
+                    bothUsingManagedIdentity = false;
             }        
             else
             {
                 if (string.IsNullOrEmpty(EventHubConnectionString))
                     errors.Add(nameof(EventHubConnectionString));
+                if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.IsUsingManagedIdentity())
+                    bothUsingManagedIdentity = false;
             }
+            if (!bothUsingManagedIdentity)
+                throw new ArgumentException("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using.");
+
             if (string.IsNullOrEmpty(EventHubEntityPath))
                 errors.Add(nameof(EventHubEntityPath));
             if (string.IsNullOrEmpty(Environment))
@@ -105,7 +114,7 @@ namespace UKHO.Logging.EventHubLogProvider
                 errors.Add(nameof(NodeName));
             if (AdditionalValuesProvider == null)
                 errors.Add(nameof(AdditionalValuesProvider));
-            
+          
 
             if (errors.Any())
                 throw new ArgumentException($"Parameters {string.Join(",", errors)} must be set to a valid value.", string.Join(",", errors));
@@ -129,7 +138,7 @@ namespace UKHO.Logging.EventHubLogProvider
             if (ValidateConnectionString || ValidateConnection)
                 ValidateConnectionToEventHub();
         }
-
+        
         public bool IsUsingManagedIdentity()
             =>  !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
 

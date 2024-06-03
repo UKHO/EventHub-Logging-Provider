@@ -272,7 +272,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             
             //Assert
             Assert.NotNull(argumentException);
-            Assert.That(argumentException.Message, Does.StartWith("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
+            Assert.That(argumentException.Message, Is.EqualTo("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
         }
         
         // SA uses ID but not EH means Exception
