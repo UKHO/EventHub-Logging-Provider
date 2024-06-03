@@ -245,7 +245,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         {
             //Arrange
             var tokenCredential = new Mock<TokenCredential>();
-            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, tokenCredential.Object, true, "string", "string");
             options.EventHubFullyQualifiedNamespace = "Correct";
             options.TokenCredential = tokenCredential.Object;
             options.AzureStorageLogProviderOptions = validStorageOptions;
@@ -282,7 +282,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         {
             //Arrange
             var tokenCredential = new Mock<TokenCredential>();
-            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, tokenCredential.Object, true, "string", "string");
             options.EventHubConnectionString = "Correct";
             options.AzureStorageLogProviderOptions = validStorageOptions;
 

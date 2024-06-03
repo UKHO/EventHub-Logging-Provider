@@ -19,7 +19,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// <param name="azureStorageLoggerEnabled">The azure storage enabled flag</param>
         /// <param name="successfulMessageTemplate">The successful message template</param>
         /// <param name="failedMessageTemplate">The failed message template</param>
-        public AzureStorageLogProviderOptions(Uri blobContainerUri,
+        public AzureStorageLogProviderOptions(string blobContainerUri,
                                               TokenCredential credential,
                                               bool azureStorageLoggerEnabled,
                                               string successfulMessageTemplate,
@@ -29,8 +29,11 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             if (!AzureStorageLoggerEnabled)
                 return;
 
-            AzureStorageBlobContainerUri = blobContainerUri ?? throw new NullReferenceException($"The {nameof(blobContainerUri)} when Azure storage option is set to enabled");
-            AzureStorageCredential = credential ?? throw new NullReferenceException($"The {nameof(credential)} when Azure storage option is set to enabled");
+            if (string.IsNullOrEmpty(blobContainerUri))
+                throw new NullReferenceException("The Azure storage blob container uri cannot be null or empty when Azure storage option is set to enabled");
+            AzureStorageBlobContainerUri = ValidateUri(blobContainerUri);
+
+            AzureStorageCredential = credential ?? throw new NullReferenceException($"The {nameof(credential)} cannot be null when Azure storage option is set to enabled");
         }
 
         /// <summary>
@@ -53,7 +56,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             
             if (string.IsNullOrEmpty(AzureStorageContainerSasUrlString))
                 throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
-            AzureStorageContainerSasUrl = ValidateSasUrl(azureStorageContainerSasUrlString);
+            AzureStorageContainerSasUrl = ValidateUri(azureStorageContainerSasUrlString);
         }
 
         private AzureStorageLogProviderOptions(
@@ -109,12 +112,12 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         /// <param name="url">The url (string)</param>
         /// <returns>A url model</returns>
-        private Uri ValidateSasUrl(string url)
+        private Uri ValidateUri(string url)
         {
             var isValid = Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && Uri.IsWellFormedUriString(url, UriKind.Absolute);
 
             if (isValid == false)
-                throw new UriFormatException("Invalid sas url.");
+                throw new UriFormatException("Invalid sas or blob contaiiner url specified");
 
             return uri;
         }
