@@ -1,10 +1,7 @@
 ﻿using System;
 using Azure.Core;
-using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client.Extensions.Msal;
 using Moq;
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProviderTest.Factories;
 

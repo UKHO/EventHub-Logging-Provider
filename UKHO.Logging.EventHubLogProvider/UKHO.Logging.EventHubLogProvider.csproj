@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.11.3" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.3" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />

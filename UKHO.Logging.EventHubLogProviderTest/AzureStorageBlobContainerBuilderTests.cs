@@ -1,11 +1,7 @@
 ﻿using System;
-
 using Azure.Core;
-
 using Moq;
-
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 using UKHO.Logging.EventHubLogProviderTest.Factories;
 

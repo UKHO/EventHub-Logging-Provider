@@ -16,13 +16,9 @@
 // OF SUCH DAMAGE.
 
 using System;
-
 using FakeItEasy;
-
 using Microsoft.Extensions.Logging;
-
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider;
 
 namespace UKHO.Logging.EventHubLogProviderTest
