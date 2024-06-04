@@ -201,6 +201,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             //Act
             //Assert
             Assert.DoesNotThrow(() => options.Validate());
+           
         }
 
         [Test]
@@ -236,10 +237,26 @@ namespace UKHO.Logging.EventHubLogProviderTest
             Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubEntityPath,Environment,System,Service must be set to a valid value"));
         }
 
+        [Test]
+        public void ManagedIdentityWithValidateConnectionTurnedOn_Validate_ThrowsAnArgumentExceptionIfBlocbContainerUriIsRubbish()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            options.EventHubFullyQualifiedNamespace = "test-servicebus.windows.net";          
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.NodeName = "Bill";
+            options.ValidateConnectionString = true;
+            options.TokenCredential = tokenCredential.Object;         
+
+            //Act
+            //Assert
+            Assert.Throws<ArgumentException>(() => options.Validate());
+        }
+
         #region AuthenticationMismatchTests
 
         // Both EH and SA uses ID means OK
-        
+
         [Test]
         public void ManagedIdentityIsUsedForBothEventHubAndStorageAccount_Validate_Successful()
         {
