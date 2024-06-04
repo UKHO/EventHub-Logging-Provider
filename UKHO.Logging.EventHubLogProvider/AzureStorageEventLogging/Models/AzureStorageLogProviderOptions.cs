@@ -53,7 +53,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             
             if (string.IsNullOrEmpty(AzureStorageContainerSasUrlString))
                 throw new NullReferenceException("The Azure storage container sas url cannot be null or empty when Azure storage option is set to enabled");
-            AzureStorageContainerSasUrl = ValidateUri(azureStorageContainerSasUrlString);
+            AzureStorageContainerSasUrl = ValidateSasUrl(azureStorageContainerSasUrlString);
         }
 
         private AzureStorageLogProviderOptions(
@@ -110,7 +110,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         /// <param name="url">The url (string)</param>
         /// <returns>A url model</returns>
-        private Uri ValidateUri(string url)
+        private Uri ValidateSasUrl(string url)
         {
             var isValid = Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && Uri.IsWellFormedUriString(url, UriKind.Absolute);
 
