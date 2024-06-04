@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using Azure.Core;
 using Microsoft.Extensions.Logging;
