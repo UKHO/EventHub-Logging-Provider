@@ -139,7 +139,7 @@ namespace UKHO.Logging.EventHubLogProvider
         }
         
         public bool IsUsingManagedIdentity()
-            =>  !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
+            => !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
 
   
         private void ValidateConnectionToEventHub()

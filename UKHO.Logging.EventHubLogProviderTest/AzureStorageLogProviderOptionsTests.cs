@@ -45,10 +45,11 @@ namespace UKHO.Logging.EventHubLogProviderTest
             string url = null;
 
             //Act
-            var exception = Assert.Throws<NullReferenceException>(() => new AzureStorageLogProviderOptions(url,
-                                                                                                           true,
-                                                                                                           resourcesFactory.SuccessTemplateMessage,
-                                                                                                           resourcesFactory.FailureTemplateMessage));
+            var exception = Assert.Throws<NullReferenceException>(() => 
+                                                                    new AzureStorageLogProviderOptions(url,
+                                                                    true,
+                                                                    resourcesFactory.SuccessTemplateMessage,
+                                                                    resourcesFactory.FailureTemplateMessage));
 
             //Assert
             Assert.That(exception, Is.Not.Null);
@@ -80,10 +81,10 @@ namespace UKHO.Logging.EventHubLogProviderTest
          
             //Act
             var exception = Assert.Throws<UriFormatException>(() => new AzureStorageLogProviderOptions(new Uri(_invalidUrl),
-                                                                                                           tokenCredential.Object,
-                                                                                                           true,
-                                                                                                           resourcesFactory.SuccessTemplateMessage,
-                                                                                                           resourcesFactory.FailureTemplateMessage));
+                                                                                                        tokenCredential.Object,
+                                                                                                        true,
+                                                                                                        resourcesFactory.SuccessTemplateMessage,
+                                                                                                        resourcesFactory.FailureTemplateMessage));
             //Assert
             Assert.That(exception, Is.Not.Null);
             Assert.That(exception.Message, Is.EqualTo("Invalid URI: The format of the URI could not be determined."));

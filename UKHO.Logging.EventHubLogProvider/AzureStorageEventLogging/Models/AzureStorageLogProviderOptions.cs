@@ -1,7 +1,5 @@
 ﻿using System;
-
 using Azure.Core;
-
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
