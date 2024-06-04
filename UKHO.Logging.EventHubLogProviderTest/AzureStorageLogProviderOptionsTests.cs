@@ -23,13 +23,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_ValidateSasUrl_InvalidUrl()
         {
-            var url = _invalidUrl;
 
             //Act
-            var exception = Assert.Throws<UriFormatException>(() => new AzureStorageLogProviderOptions(url,
-                                                                                                       true,
-                                                                                                       resourcesFactory.SuccessTemplateMessage,
-                                                                                                       resourcesFactory.FailureTemplateMessage));
+            var exception = Assert.Throws<UriFormatException>(() => new AzureStorageLogProviderOptions(_invalidUrl,
+                                                                                                        true,
+                                                                                                        resourcesFactory.SuccessTemplateMessage,
+                                                                                                        resourcesFactory.FailureTemplateMessage));
 
             //Assert
             Assert.That(exception, Is.Not.Null);
@@ -62,12 +61,10 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void Test_ValidateSasUrl_ValidUrl()
         {
-            var url = _validUrl;
-
-            var result = new AzureStorageLogProviderOptions(url, true, resourcesFactory.SuccessTemplateMessage, resourcesFactory.FailureTemplateMessage);
+            var result = new AzureStorageLogProviderOptions(_validUrl, true, resourcesFactory.SuccessTemplateMessage, resourcesFactory.FailureTemplateMessage);
 
             Assert.IsNotNull(result.AzureStorageContainerSasUrl);
-            Assert.AreEqual(result.AzureStorageContainerSasUrl.AbsoluteUri, url);
+            Assert.AreEqual(result.AzureStorageContainerSasUrl.AbsoluteUri, _validUrl);
         }
 
         /// <summary>

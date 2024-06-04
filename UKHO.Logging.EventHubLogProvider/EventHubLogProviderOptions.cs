@@ -113,7 +113,6 @@ namespace UKHO.Logging.EventHubLogProvider
                 errors.Add(nameof(NodeName));
             if (AdditionalValuesProvider == null)
                 errors.Add(nameof(AdditionalValuesProvider));
-          
 
             if (errors.Any())
                 throw new ArgumentException($"Parameters {string.Join(",", errors)} must be set to a valid value.", string.Join(",", errors));
@@ -124,7 +123,7 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (CustomLogSerializerConverters==null)
                 throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not be null.");
-            
+
             if (CustomLogSerializerConverters.Any(c => c == null))
                 throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not contain null entries.");
             
@@ -140,7 +139,6 @@ namespace UKHO.Logging.EventHubLogProvider
         
         public bool IsUsingManagedIdentity()
             => !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
-
   
         private void ValidateConnectionToEventHub()
         {
