@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Azure;
+using Azure.Core;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using UKHO.Logging.EventHubLogProvider;
@@ -19,8 +21,24 @@ namespace UKHO.Logging.EventHubLogProviderTest
     [TestFixture]
     public class AzureStorageEventLoggerExtensionsTests
     {
-        private readonly ResourcesFactory resourcesFactory = new ResourcesFactory();
-
+        private ResourcesFactory resourcesFactory = new ResourcesFactory();
+        private const string _validUriString = "https://test.com/";
+        private AzureStorageLogProviderOptions GetAzureStorageLogProviderOptions(bool azureStorageEnabled, bool isManagedIdentity = false)
+        {
+            if (isManagedIdentity)
+            {
+                return new AzureStorageLogProviderOptions( new Uri(_validUriString),
+                                                    new Mock<TokenCredential>().Object,
+                                                    azureStorageEnabled,
+                                                    resourcesFactory.SuccessTemplateMessage,
+                                                    resourcesFactory.FailureTemplateMessage);
+            }            
+            return new AzureStorageLogProviderOptions(_validUriString,
+                                                    azureStorageEnabled,
+                                                    resourcesFactory.SuccessTemplateMessage,
+                                                    resourcesFactory.FailureTemplateMessage);
+            
+        }
         /// <summary>
         ///     Generates a test string message
         /// </summary>
@@ -149,18 +167,16 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var result = message.IsLongMessage(size);
             Assert.IsFalse(result);
         }
-
+        
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  logger enabled flag is false)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledFalseAndMessageGreaterThan1Mb()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledFalseAndMessageGreaterThan1Mb(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        false,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(false, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningNoStorage,result);
@@ -169,14 +185,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  logger enabled flag is true)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledTrueAndMessageGreaterThan1Mb()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLoggerEnabledTrueAndMessageGreaterThan1Mb(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningAndStoreMessage, result);
@@ -185,14 +199,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  log provider options are not null)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNotNullAndMessageGreaterThan1Mb()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithAzureStorageLogProviderOptionsNotNullAndMessageGreaterThan1Mb(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningAndStoreMessage, result);
@@ -213,14 +225,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When builder model is not null)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithBuilderModelNotNullAndMessageGreaterThan1Mb()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithBuilderModelNotNullAndMessageGreaterThan1Mb(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningAndStoreMessage, result);
@@ -241,14 +251,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  the size of the message is equal to the defined size)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithMessageEqualToDefinedSize()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithMessageEqualToDefinedSize(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1024);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningAndStoreMessage, result);
@@ -257,14 +265,12 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  the size of the message is greater than the defined size)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithMessageGreaterThanDefinedSize()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithMessageGreaterThanDefinedSize(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 1025);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningAndStoreMessage, result);
@@ -273,19 +279,57 @@ namespace UKHO.Logging.EventHubLogProviderTest
         /// <summary>
         ///     Test for the azure storage needs logging extension (When  the size of the message is less than the defined size)
         /// </summary>
-        [Test]
-        public void Test_NeedsAzureStorageLogging_WithMessageLessThanDefinedSize()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithMessageLessThanDefinedSize(bool isManagedIdentity)
         {
             var azureStorageBlobContainerBuilder =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions("https://test.com",
-                                                                                        true,
-                                                                                        resourcesFactory.SuccessTemplateMessage,
-                                                                                        resourcesFactory.FailureTemplateMessage));
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(true, isManagedIdentity));
             var message = GenerateTestMessage(1024 * 512);
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.NoLogging, result);
         }
 
+        /// <summary>
+        ///     Test for the azure storage needs logging extension (When  the size of the message is less than the defined size)
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithNoStorageEnabledAndMessageLessThanDefinedSize(bool isManagedIdentity)
+        {
+            var azureStorageBlobContainerBuilder =
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(false, isManagedIdentity));
+            var message = GenerateTestMessage(1024 * 512); // < 1mb
+            var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.NoLogging, result);
+        }
+
+        /// <summary>
+        ///     Test for the azure storage needs logging extension (When  the size of the message is greater than the defined size)
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithNoStorageEnabledAndMessageGreaterThanDefinedSize(bool isManagedIdentity)
+        {
+            var azureStorageBlobContainerBuilder =
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(false, isManagedIdentity));
+            var message = GenerateTestMessage(1024 * 1025); // > 1mb
+            var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningNoStorage, result);
+        }
+        /// <summary>
+        ///     Test for the azure storage needs logging extension (When  the size of the message is equal to the defined size)
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Test_NeedsAzureStorageLogging_WithNoStorageEnabledAndMessageEqualToDefinedSize(bool isManagedIdentity)
+        {
+            var azureStorageBlobContainerBuilder =
+                new AzureStorageBlobContainerBuilder(GetAzureStorageLogProviderOptions(false, isManagedIdentity));
+            var message = GenerateTestMessage(1024 * 1024); // = 1mb
+            var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
+            Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningNoStorage, result);
+        }
         /// <summary>
         ///     Test for the extension method that creates and returns the log entry as a json string
         /// </summary>
