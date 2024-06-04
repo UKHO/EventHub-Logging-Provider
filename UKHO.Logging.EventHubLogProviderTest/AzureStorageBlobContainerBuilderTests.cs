@@ -66,7 +66,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var tokenCredential = new Mock<TokenCredential>();
 
             var azureOptionsModel =
-                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions(_validURI,
+                new AzureStorageBlobContainerBuilder(new AzureStorageLogProviderOptions(new Uri(_validURI),
                                                                                         tokenCredential.Object,
                                                                                         true,
                                                                                         resourcesFactory.SuccessTemplateMessage,

@@ -36,7 +36,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
 
             //Assert
             Assert.That(exception, Is.Not.Null);
-            Assert.That(exception.Message, Is.EqualTo("Invalid sas or blob contaiiner url specified"));
+            Assert.That(exception.Message, Is.EqualTo("Invalid sas url."));
         }
 
         /// <summary>
@@ -73,26 +73,6 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         /// <summary>
-        ///     Test for the method that validates the url string (When the url string is null)
-        /// </summary>
-        [TestCase("") ]
-        [TestCase(null)]      
-        public void WhenUsingManagedIdentity_WithNullOrEmpty_ThrowsException(string blobContainerUri)
-        {
-            //Arrange
-            var tokenCredential = new Mock<TokenCredential>(); 
-            //Act
-            var exception = Assert.Throws<NullReferenceException>(() => new AzureStorageLogProviderOptions(blobContainerUri,
-                                                                                                           tokenCredential.Object,
-                                                                                                           true,
-                                                                                                           resourcesFactory.SuccessTemplateMessage,
-                                                                                                           resourcesFactory.FailureTemplateMessage));
-            //Assert
-            Assert.That(exception, Is.Not.Null);
-            Assert.That(exception.Message, Is.EqualTo("The Azure storage blob container uri cannot be null or empty when Azure storage option is set to enabled"));
-
-        }
-        /// <summary>
         ///     Test for the method that validates the invalid blocb uri
         /// </summary>
         [Test]
@@ -102,14 +82,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var tokenCredential = new Mock<TokenCredential>();
          
             //Act
-            var exception = Assert.Throws<UriFormatException>(() => new AzureStorageLogProviderOptions(_invalidUrl,
+            var exception = Assert.Throws<UriFormatException>(() => new AzureStorageLogProviderOptions(new Uri(_invalidUrl),
                                                                                                            tokenCredential.Object,
                                                                                                            true,
                                                                                                            resourcesFactory.SuccessTemplateMessage,
                                                                                                            resourcesFactory.FailureTemplateMessage));
             //Assert
             Assert.That(exception, Is.Not.Null);
-            Assert.That(exception.Message, Is.EqualTo("Invalid sas or blob contaiiner url specified"));
+            Assert.That(exception.Message, Is.EqualTo("Invalid URI: The format of the URI could not be determined."));
 
         }
         /// <summary>
@@ -122,7 +102,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var tokenCredential = new Mock<TokenCredential>();
             
             //Act
-            var result = new AzureStorageLogProviderOptions(_validUrl,
+            var result = new AzureStorageLogProviderOptions(new Uri(_validUrl),
                                                             tokenCredential.Object,
                                                             true,
                                                             resourcesFactory.SuccessTemplateMessage,
@@ -138,7 +118,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
         {
             TokenCredential tokenCredentials = null;
             //Act
-            var exception = Assert.Throws<NullReferenceException>(() => new AzureStorageLogProviderOptions(_validUrl,
+            var exception = Assert.Throws<NullReferenceException>(() => new AzureStorageLogProviderOptions(new Uri(_validUrl),
                                                                 tokenCredentials,
                                                                 true,
                                                                 resourcesFactory.SuccessTemplateMessage,
@@ -154,7 +134,7 @@ namespace UKHO.Logging.EventHubLogProviderTest
             TokenCredential tokenCredentials = null;
             //Act
             //Assert
-            Assert.DoesNotThrow(() => new AzureStorageLogProviderOptions(_invalidUrl,
+            Assert.DoesNotThrow(() => new AzureStorageLogProviderOptions(new Uri(_validUrl),
                                                                 tokenCredentials,
                                                                 false,
                                                                 resourcesFactory.SuccessTemplateMessage,

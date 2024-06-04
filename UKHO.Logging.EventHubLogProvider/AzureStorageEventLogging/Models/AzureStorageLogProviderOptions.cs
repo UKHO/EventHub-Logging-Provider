@@ -19,20 +19,17 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// <param name="azureStorageLoggerEnabled">The azure storage enabled flag</param>
         /// <param name="successfulMessageTemplate">The successful message template</param>
         /// <param name="failedMessageTemplate">The failed message template</param>
-        public AzureStorageLogProviderOptions(string blobContainerUri,
+        public AzureStorageLogProviderOptions(Uri blobContainerUri,
                                               TokenCredential credential,
                                               bool azureStorageLoggerEnabled,
                                               string successfulMessageTemplate,
                                               string failedMessageTemplate)
             : this(azureStorageLoggerEnabled, successfulMessageTemplate, failedMessageTemplate)
         {
+            AzureStorageBlobContainerUri = blobContainerUri;
             if (!AzureStorageLoggerEnabled)
                 return;
-
-            if (string.IsNullOrEmpty(blobContainerUri))
-                throw new NullReferenceException("The Azure storage blob container uri cannot be null or empty when Azure storage option is set to enabled");
-            AzureStorageBlobContainerUri = ValidateUri(blobContainerUri);
-
+            
             AzureStorageCredential = credential ?? throw new NullReferenceException($"The {nameof(credential)} cannot be null when Azure storage option is set to enabled");
         }
 
@@ -77,16 +74,6 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         ///     The azure storage sas url string
         /// </summary>
         public string AzureStorageContainerSasUrlString { get; }
-
-        public Uri AzureStorageBlobContainerUri { get; }
-
-        public bool IsUsingManagedIdentity()
-        {
-            return AzureStorageBlobContainerUri != null;
-        }
-
-        public TokenCredential AzureStorageCredential { get; }
-
         /// <summary>
         ///     Enable the azure storage functionality
         /// </summary>
@@ -96,6 +83,17 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         ///     The azure storage uri model
         /// </summary>
         public Uri AzureStorageContainerSasUrl { get; }
+        /// <summary>
+        ///     The azure storage blob uri
+        /// </summary>
+        public Uri AzureStorageBlobContainerUri { get; }
+
+        public bool IsUsingManagedIdentity()
+        {
+            return AzureStorageBlobContainerUri != null;
+        }
+
+        public TokenCredential AzureStorageCredential { get; }
 
         /// <summary>
         ///     The azure storage result successful template
@@ -117,7 +115,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             var isValid = Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && Uri.IsWellFormedUriString(url, UriKind.Absolute);
 
             if (isValid == false)
-                throw new UriFormatException("Invalid sas or blob contaiiner url specified");
+                throw new UriFormatException("Invalid sas url.");
 
             return uri;
         }
