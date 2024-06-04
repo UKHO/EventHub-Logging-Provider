@@ -330,6 +330,45 @@ namespace UKHO.Logging.EventHubLogProviderTest
             var result = azureStorageBlobContainerBuilder.NeedsAzureStorageLogging(message, 1);
             Assert.AreEqual(AzureStorageLoggingCheckResult.LogWarningNoStorage, result);
         }
+
+        /// <summary>
+        ///    Test for the extension method that creates a warning messages for the long log entry as a json string
+        /// </summary>
+        [Test]
+        public void Test_ToLongMessageWarning()
+        {
+            string longLogMessage = GenerateTestMessage(1024 * 1025);
+            string expectedMessage = $"A log over 1MB was submitted with part of the message template: {longLogMessage.Substring(0, 256)}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
+            string expectedTemplate = "A log over 1MB was submitted with a message of template: {MessageTemplate}. Please enable the Azure Storage Event Logging feature to store details of oversize logs.";
+
+            var dt = DateTime.Now;
+            var logEntry = new LogEntry
+            {
+                Exception = new Exception(""),
+                Level = "Warning",
+                MessageTemplate = longLogMessage,
+                Timestamp = dt,
+                EventId = new EventId(7000)
+            };
+            var jsonSettings = new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new NullPropertyResolver()
+            };
+
+            var warning = logEntry.ToLongMessageWarning(jsonSettings);
+            var expectedLogEntry = new LogEntry
+            {
+                Exception = new Exception(expectedMessage),
+                Level = "Warning",
+                MessageTemplate = expectedTemplate,
+                Timestamp = dt,
+                EventId = new EventId(7000)
+            };
+            Assert.AreEqual(JsonConvert.SerializeObject(expectedLogEntry, jsonSettings), warning); 
+        }
+
         /// <summary>
         ///     Test for the extension method that creates and returns the log entry as a json string
         /// </summary>
