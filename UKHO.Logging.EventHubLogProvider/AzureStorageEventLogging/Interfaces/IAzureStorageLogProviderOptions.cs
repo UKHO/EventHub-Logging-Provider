@@ -33,7 +33,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
 
         Uri AzureStorageBlobContainerUri { get; }
 
-        bool IsUsingManagedIdentity();
+        bool IsUsingManagedIdentity { get; }
 
         TokenCredential AzureStorageCredential { get; }
 

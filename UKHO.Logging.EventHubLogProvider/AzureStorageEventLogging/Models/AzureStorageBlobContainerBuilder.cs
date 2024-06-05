@@ -40,7 +40,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         {
             if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.AzureStorageLoggerEnabled)
             {
-                BlobContainerClient = AzureStorageLogProviderOptions.IsUsingManagedIdentity()
+                BlobContainerClient = AzureStorageLogProviderOptions.IsUsingManagedIdentity
                     ? new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageBlobContainerUri, AzureStorageLogProviderOptions.AzureStorageCredential)
                     : new BlobContainerClient(AzureStorageLogProviderOptions.AzureStorageContainerSasUrl);
             }

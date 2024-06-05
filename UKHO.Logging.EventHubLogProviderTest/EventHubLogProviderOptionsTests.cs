@@ -85,14 +85,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void TestValidateConnectionExplodesWithAnArgumentExceptionIfConnectionStringRubbishAndValidateConnectionStringTurnedOn()
+        public void TestValidateConnectionExplodesWithAnArgumentExceptionIfConnectionStringRubbishAndEnableConnectionValidationTurnedOn()
         {
             //Arrange
             options.EventHubConnectionString =
                 "Endpoint=sb://abadname-eventhubnamespace.servicebus.windows.net/;SharedAccessKeyName=logstash;SharedAccessKey=garbage=;EntityPath=eventhub";
             options.DefaultMinimumLogLevel = LogLevel.Critical;
             options.NodeName = "Bill";
-            options.ValidateConnectionString = true;
+            options.EnableConnectionValidation = true;
 
             //Act
             //Assert
@@ -238,14 +238,14 @@ namespace UKHO.Logging.EventHubLogProviderTest
         }
 
         [Test]
-        public void ManagedIdentityWithValidateConnectionTurnedOn_Validate_ThrowsAnArgumentExceptionIfBlocbContainerUriIsRubbish()
+        public void ManagedIdentityWithEnableConnectionValidationTurnedOn_Validate_ThrowsAnArgumentExceptionIfBlocbContainerUriIsRubbish()
         {
             //Arrange
             var tokenCredential = new Mock<TokenCredential>();
             options.EventHubFullyQualifiedNamespace = "test-servicebus.windows.net";          
             options.DefaultMinimumLogLevel = LogLevel.Critical;
             options.NodeName = "Bill";
-            options.ValidateConnectionString = true;
+            options.EnableConnectionValidation = true;
             options.TokenCredential = tokenCredential.Object;         
 
             //Act

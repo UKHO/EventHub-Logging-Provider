@@ -40,21 +40,16 @@ namespace UKHO.Logging.EventHubLogProvider
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
         public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; set; }
-
+        
         /// <summary>
         ///     If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
         ///     connection with EventHub can't be established and validated
         /// </summary>
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once RedundantDefaultMemberInitializer
-        public bool ValidateConnectionString { get; set; } = false;       
-
+        public bool EnableConnectionValidation { get; set; } = false;
         public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
 
         public TokenCredential TokenCredential { get; set; } = null;
-
-        public bool ValidateConnection { get; set; } = false;
-
+       
         /// <summary>
         ///     If set to "#MachineName", this will resolve to SystemEnvironment.MachineName at runtime.
         /// </summary>
@@ -84,18 +79,18 @@ namespace UKHO.Logging.EventHubLogProvider
             var errors = new List<string>();
             bool bothUsingManagedIdentity = true;
 
-            if (IsUsingManagedIdentity())
+            if (IsUsingManagedIdentity)
             {
                 if (TokenCredential is null)
                     errors.Add(nameof(TokenCredential));
-                if (AzureStorageLogProviderOptions != null && !AzureStorageLogProviderOptions.IsUsingManagedIdentity())
+                if (AzureStorageLogProviderOptions != null && !AzureStorageLogProviderOptions.IsUsingManagedIdentity)
                     bothUsingManagedIdentity = false;
             }        
             else
             {
                 if (string.IsNullOrEmpty(EventHubConnectionString))
                     errors.Add(nameof(EventHubConnectionString));
-                if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.IsUsingManagedIdentity())
+                if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.IsUsingManagedIdentity)
                     bothUsingManagedIdentity = false;
             }
             if (!bothUsingManagedIdentity)
@@ -133,16 +128,16 @@ namespace UKHO.Logging.EventHubLogProvider
                 throw new ArgumentException($"{nameof(CustomLogSerializerConverters)} must be able to write: {string.Join(",", badConverters.Select(c => c?.GetType().FullName??"null"))}");
             }
 
-            if (ValidateConnectionString || ValidateConnection)
+            if (EnableConnectionValidation)
                 ValidateConnectionToEventHub();
         }
         
-        public bool IsUsingManagedIdentity()
+        public bool IsUsingManagedIdentity
             => !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
   
         private void ValidateConnectionToEventHub()
         {
-            var eventHubClientWrapper = IsUsingManagedIdentity() ?
+            var eventHubClientWrapper = IsUsingManagedIdentity ?
                  new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions) :
                  new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
 

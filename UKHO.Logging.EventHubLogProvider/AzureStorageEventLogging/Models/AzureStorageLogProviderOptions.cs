@@ -86,11 +86,15 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         public Uri AzureStorageBlobContainerUri { get; }
 
-        public bool IsUsingManagedIdentity()
-        {
-            return AzureStorageBlobContainerUri != null;
-        }
+        /// <summary>
+        ///    Indicates whether Managed identity is used to authenticate with Storage account
+        /// </summary>
+        public bool IsUsingManagedIdentity
+            => AzureStorageBlobContainerUri != null;
 
+        /// <summary>
+        ///     Credentials to authenticate with Storage account using  managed identity 
+        /// </summary>
         public TokenCredential AzureStorageCredential { get; }
 
         /// <summary>
