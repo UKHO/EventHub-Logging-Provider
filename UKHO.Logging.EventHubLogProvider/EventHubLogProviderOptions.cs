@@ -40,7 +40,10 @@ namespace UKHO.Logging.EventHubLogProvider
         public string System { get; set; }
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
         public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; set; }
-        
+
+        [Obsolete(message: "Use EnableConnectionValidation instead.", error: true)]
+        public bool ValidateConnectionString { get => EnableConnectionValidation; set => EnableConnectionValidation = value; }
+
         /// <summary>
         ///     If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
         ///     connection with EventHub can't be established and validated
