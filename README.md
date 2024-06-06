@@ -2,7 +2,7 @@
 
 The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.Logging.Abstractions. Logs are sent to Event Hub as a JSON message. The EventHubLogProvider provides a number of standard properties to enrich every log message, and provides a mechanism to add application specific custom properties to logs.
 
-Event hub log provider now supports authentication using both Managed Service Identity or connection string/SAS Uri to Event hub or Azure storage container respectively. However they both should use either Managed Identity to both Eventhub and Azure storage or neither. 
+Event Hub Log Provider now supports authentication using both Managed Service Identity or connection string/SAS Uri to Event Hub or Azure storage container respectively. However they both should use either Managed Identity to both Event Hub and Azure storage or neither. 
 
 Configuring using managed identity or connection string is shown below.
 
@@ -278,7 +278,7 @@ The JsonConverter must implement `WriteJson`, but the `ReadJson` method can be l
 The Azure Storage Logging Provider is a storage logging provider that stores messages with size equal or greater than 1Mb into an Azure storage container. Finally, it updates the log entry with the azure storage blob details. Enabling the Azure storage provider is optional.
 
 The provider can be enabled by providing the AzureStorageLogProviderOptions.
-It supports bothe managed identity or SAS url for authentication. Below are example for each.
+It supports both managed identity or SAS url for authentication. Below are example for each.
 
 ### Configuration using Azure Storage conatiner SAS url
 
