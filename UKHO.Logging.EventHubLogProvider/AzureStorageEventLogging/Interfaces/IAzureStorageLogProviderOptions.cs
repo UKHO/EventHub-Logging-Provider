@@ -31,10 +31,19 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
         /// </summary>
         string AzureStorageContainerSasUrlString { get; }
 
+        /// <summary>
+        ///     The azure storage blob container uri
+        /// </summary>
         Uri AzureStorageBlobContainerUri { get; }
 
+        /// <summary>
+        ///     To determine if we are using managed identity or connection string
+        /// </summary>
         bool IsUsingManagedIdentity { get; }
 
+        /// <summary>
+        ///      The Azure managed identity credential to use for authorization..
+        /// </summary>
         TokenCredential AzureStorageCredential { get; }
 
         /// <summary>

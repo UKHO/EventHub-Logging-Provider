@@ -2,6 +2,10 @@
 
 The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.Logging.Abstractions. Logs are sent to Event Hub as a JSON message. The EventHubLogProvider provides a number of standard properties to enrich every log message, and provides a mechanism to add application specific custom properties to logs.
 
+Event hub log provider now supports authentication using both Managed Service Identity or connection string/SAS Uri to Event hub or Azure storage container respectively. However they both should use either Managed Identity to both Eventhub and Azure storage or neither. 
+
+Configuring using managed identity or connection string is shown below.
+
 ## Getting Started
 
 ### Installation Guide
@@ -19,6 +23,8 @@ There are two recommended setups depending on the version of .NET: a legacy setu
 The EventHubLogProvider is added to the ```IServiceCollection``` service collection via an ```ILoggingBuilder```.  
 
 NuGet packages can be installed for extensions to the builder, for example adding console logging in the below statement ```loggingBuilder.AddConsole();``` would require installing the package ```ConsoleLoggerExtensions```
+
+#### Configuration using connection string for Event hub
 
 ```cs
     services.AddLogging(loggingBuilder =>
@@ -46,6 +52,36 @@ NuGet packages can be installed for extensions to the builder, for example addin
         }
     });
 ```
+
+#### Configuration using Managed identity to Event hub
+
+```cs
+var eventHubLogProviderOptions = builder.Configuration.GetSection("EventHubLogProviderOptions").Get<EventHubLogProviderOptions>();
+ArgumentNullException.ThrowIfNull(eventHubLogProviderOptions);
+
+builder.Logging.AddEventHub(options =>
+{         
+    options.EventHubFullyQualifiedNamespace = eventHubLogProviderOptions.EventHubFullyQualifiedNamespace,
+    options.TokenCredential = new DefaultAzureCredential(), 
+    options.EventHubEntityPath = eventHubLogProviderOptions.EntityPath;
+    options.EnableConnectionValidation = eventHubLogProviderOptions.EnableConnectionValidation;
+    options.DefaultMinimumLogLevel = eventHubLogProviderOptions.MinimumLoggingLevel;
+    options.MinimumLogLevels["UKHO"] = eventHubLogProviderOptions.UkhoMinimumLoggingLevel;
+
+    options.Environment = eventHubLogProviderOptions.Environment;
+    options.System = eventHubLogProviderOptions.System;
+    options.Service = eventHubLogProviderOptions.Service;
+    options.NodeName = eventHubLogProviderOptions.NodeName;
+    options.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
+});
+```
+
+Please note that following 2 options are added for authenticating with Managed Identity
+
+- EventHubFullyQualifiedNamespace - The fully qualified Event Hubs namespace to connect to. This is likely to be similar to {yournamespace}.servicebus.windows.net.
+- TokenCredential - The Azure managed identity credential to use for authorization.  
+
+[!NOTE] The application (or user if running in Visual Studio) will require `Azure Event Hubs Data Sender` role on the Event hub. 
 
 If you've upgraded from an earlier version of .NET Core and have not migrated to the new minimal hosting model, i.e., there is still a startup.cs, the above code should be added to the ```ConfigureServices```:
 
@@ -122,7 +158,7 @@ loggerFactory.AddEventHub(
         config.AzureStorageLogProviderOptions = new AzureStorageLogProviderOptions(
                                         Configuration.GetValue<String>("AzureStorageOptions:SasUrl")
                                         ,Configuration.GetValue<Boolean>("AzureStorageOptions:Enabled")
-                                        ,Configuration.GetValue<String>                                 ("AzureStorageOptions:SuccessfulMessageTemplate") 
+                                        ,Configuration.GetValue<String> ("AzureStorageOptions:SuccessfulMessageTemplate") 
                                         ,Configuration.GetValue<String>("AzureStorageOptions:FailedMessageTemplate")
                                         );
          
@@ -241,7 +277,12 @@ The JsonConverter must implement `WriteJson`, but the `ReadJson` method can be l
 
 The Azure Storage Logging Provider is a storage logging provider that stores messages with size equal or greater than 1Mb into an Azure storage container. Finally, it updates the log entry with the azure storage blob details. Enabling the Azure storage provider is optional.
 
-The provider can be enabled by providing the AzureStorageLogProviderOptions model which consists of:
+The provider can be enabled by providing the AzureStorageLogProviderOptions.
+It supports bothe managed identity or SAS url for authentication. Below are example for each.
+
+### Configuration using Azure Storage conatiner SAS url
+
+ The AzureStorageLogProviderOptions model consists of:
 
 ```cs
 //The SAS url for the storage container, recommended rights set : racwl
@@ -252,7 +293,6 @@ bool azureStorageLoggerEnabled,
 string successfulMessageTemplate,
 //A template for the messages that failed to be stored*
 string failedMessageTemplate
-
 /*
 The templates are configurable. 
 The parameters must be added with the following format: {{property_name}} 
@@ -280,7 +320,7 @@ public DateTime ModifiedDate { get; set; }
 */
 ```
 
-### Example of a configuration section(json)
+#### Example of a configuration section(json) 
 
 ```json
     "AzureStorageOptions": {
@@ -290,6 +330,40 @@ public DateTime ModifiedDate { get; set; }
     "FailedMessageTemplate": "Azure Storage Logging: Storing blob failed. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}}"
   }
 ```
+
+### Configuration using Managed identity
+
+ The AzureStorageLogProviderOptions model consists of:
+
+ ```
+options.AzureStorageLogProviderOptions = new AzureStorageLogProviderOptions(
+                        // Azure storage blob container uri
+                        new Uri(builder.Configuration.GetValue<String>("AzureStorageOptions:BlobContainerUri"),
+                        // The Azure managed identity credential to use for authorization.
+                        new DefaultAzureCredential(),
+                        //Enables (true) or disables(false) the Azure storage logging provider
+                        builder.Configuration.GetValue<String>("AzureStorageOptions:AzureStorageLoggerEnabled"),
+                        //A template for the messages that are successfully stored
+                        builder.Configuration.GetValue<String>("AzureStorageOptions:SuccessMessageTemaplate"),
+                        //A template for the messages that failed to be stored*                      
+                        builder.Configuration.GetValue<String>("AzureStorageOptions:FailedMessageTemplate")
+                        );
+
+
+```
+
+### Example of a configuration section(json) 
+
+```json
+    "AzureStorageOptions": {
+    "BlobContainerUri": "blob container uri", //This is likely to be similar to "https://{account_name}.blob.core.windows.net/{container_name}"
+    "Enabled": true,
+    "SuccessfulMessageTemplate": "Azure Storage Logging: A blob with the error details was created at {{BlobFullName}}. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}} Sha256: {{FileSHA}} FileSize(Bs): {{FileSize}} FileModifiedDate: {{ModifiedDate}}",
+    "FailedMessageTemplate": "Azure Storage Logging: Storing blob failed. Reason: ErrorMessageEqualOrGreaterTo1MB ResponseMessage: {{ReasonPhrase}} ResponseCode: {{StatusCode}} RequestId: {{RequestId}}"
+  }
+```
+
+[!NOTE] The application (or user if running in Visual Studio) will require `Storage Blob Data Contributor` role on the Event hub. 
 
 ### Azure Storage Provider Functional Diagram
 
