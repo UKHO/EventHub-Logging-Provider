@@ -16,24 +16,46 @@
 // OF SUCH DAMAGE.
 
 using System;
-
+using Azure.Core;
 using Microsoft.Extensions.Logging;
-
+using Moq;
 using NUnit.Framework;
-
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProviderTest
 {
     [TestFixture]
     public class EventHubLogProviderOptionsTests
     {
+        private EventHubLogProviderOptions options;
+        private const string _validUriString = "https://test.com/";
+        private const string _invalidUriString = "-test";
+
+        [SetUp]
+        public void SetUp()
+        {
+            options = new EventHubLogProviderOptions
+                      {
+                          Environment = "Env",
+                          EventHubEntityPath = "Path",
+                          Service = "Service",
+                          System = "System"
+                      };
+        }
+
         [Test]
         public void TestValidateWithDefaultsFailsValidation()
         {
-            var options = new EventHubLogProviderOptions();
+            //Arrange
+            const string parameterNames = "EventHubConnectionString,EventHubEntityPath,Environment,System,Service";
+            options = new EventHubLogProviderOptions();
+
+            //Act
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
-            var parameterNames = "EventHubConnectionString,EventHubEntityPath,Environment,System,Service";
+
+            //Assert
+            Assert.NotNull(argumentException);
             Assert.AreEqual(parameterNames, argumentException.ParamName);
             Assert.That(argumentException.Message, Does.StartWith($"Parameters {parameterNames} must be set to a valid value"));
         }
@@ -41,63 +63,53 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestValidateOkWithMinimumValuesSet()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Connect!",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System"
-                          };
-            options.Validate();
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
         }
 
         [Test]
         public void TestValidateOkWithAllValuesSet()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Connect!",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System",
-                              DefaultMinimumLogLevel = LogLevel.Critical,
-                              NodeName = "Bill"
-                          };
-            options.Validate();
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.NodeName = "Bill";
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
         }
 
         [Test]
-        public void TestValidateConnectionExplodesWithAnArgumentExceptionIfConnectionStringRubbishAndValidateConnectionStringTurnedOn()
+        public void TestValidateConnectionExplodesWithAnArgumentExceptionIfConnectionStringRubbishAndEnableConnectionValidationTurnedOn()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Endpoint=sb://abadname-eventhubnamespace.servicebus.windows.net/;SharedAccessKeyName=logstash;SharedAccessKey=garbage=;EntityPath=eventhub",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System",
-                              DefaultMinimumLogLevel = LogLevel.Critical,
-                              NodeName = "Bill",
-                              ValidateConnectionString = true
-                          };
+            //Arrange
+            options.EventHubConnectionString =
+                "Endpoint=sb://abadname-eventhubnamespace.servicebus.windows.net/;SharedAccessKeyName=logstash;SharedAccessKey=garbage=;EntityPath=eventhub";
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.NodeName = "Bill";
+            options.EnableConnectionValidation = true;
+
+            //Act
+            //Assert
             Assert.Throws<ArgumentException>(() => options.Validate());
         }
 
         [Test]
         public void TestValidateFailsWithAnEmptyNamespaceLogLevelOverride()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Connect!",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System",
-                              MinimumLogLevels = { { "", LogLevel.Critical } }
-                          };
+            options.EventHubConnectionString = "Connect!";
+            options.MinimumLogLevels.Add("", LogLevel.Critical);
+
+            //Act
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
             Assert.AreEqual("MinimumLogLevels", argumentException.ParamName);
             Assert.That(argumentException.Message, Does.StartWith("Parameter MinimumLogLevels can not contain an empty key"));
         }
@@ -105,16 +117,15 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestValidateFailsWhenAdditionalValuesActionSetToNull()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Connect!",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System",
-                              AdditionalValuesProvider = null
-                          };
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+            options.AdditionalValuesProvider = null;
+
+            //Act
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
             Assert.AreEqual("AdditionalValuesProvider", argumentException.ParamName);
             Assert.That(argumentException.Message, Does.StartWith("Parameters AdditionalValuesProvider must be set to a valid value"));
         }
@@ -122,17 +133,16 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestValidateWithAllValuesSetButNodeNameUnsetWillThrowExceptionForTheNodeName()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              Environment = "Env",
-                              EventHubConnectionString = "Connect!",
-                              EventHubEntityPath = "Path",
-                              Service = "Service",
-                              System = "System",
-                              DefaultMinimumLogLevel = LogLevel.Critical,
-                              NodeName = ""
-                          };
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.NodeName = "";
+
+            //Act
             var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
             Assert.AreEqual("NodeName", argumentException.ParamName);
             Assert.That(argumentException.Message, Does.StartWith("Parameters NodeName must be set to a valid value"));
         }
@@ -140,37 +150,182 @@ namespace UKHO.Logging.EventHubLogProviderTest
         [Test]
         public void TestMachineNameMacroOnGet()
         {
+            //Arrange
             var myComputerName = Environment.MachineName;
             var eventHubLogProviderOptions = new EventHubLogProviderOptions();
-            Assert.AreEqual(myComputerName, eventHubLogProviderOptions.NodeName);
 
-            eventHubLogProviderOptions.NodeName = "ExplictValue";
-            Assert.AreEqual("ExplictValue", eventHubLogProviderOptions.NodeName);
+            //Assert
+            Assert.AreEqual(myComputerName, eventHubLogProviderOptions.NodeName);
+        }
+
+        [Test]
+        public void TestNodeNameReturnsSetNameOnGet()
+        {
+            //Arrange
+            options.NodeName = "ExplicitValue";
+
+            //Assert
+            Assert.AreEqual("ExplicitValue", options.NodeName);
         }
 
         [Test]
         public void TestConfigureLoggingLevelsForDifferentNamespaces()
         {
-            var options = new EventHubLogProviderOptions
-                          {
-                              DefaultMinimumLogLevel = LogLevel.Critical,
-                              MinimumLogLevels =
-                              {
-                                  ["UKHO"] = LogLevel.Trace,
-                                  ["UKHO.Logging"] = LogLevel.Information,
-                                  ["UKHO.Logging.Event"] = LogLevel.None,
-                                  ["UKHO.Security"] = LogLevel.Debug,
-                                  ["AnImportant\\Path"] = LogLevel.Warning
-                              }
-                          };
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.MinimumLogLevels.Add("UKHO", LogLevel.Trace);
+            options.MinimumLogLevels.Add("UKHO.Logging", LogLevel.Information);
+            options.MinimumLogLevels.Add("UKHO.Logging.Event", LogLevel.None);
+            options.MinimumLogLevels.Add("UKHO.Security", LogLevel.Debug);
+            options.MinimumLogLevels.Add("AnImportant\\Path", LogLevel.Warning);
 
-            Assert.AreEqual(LogLevel.Information, options.GetMinimumLogLevelForCategory("UKHO.Logging.EventLogger"));
-            Assert.AreEqual(LogLevel.Debug, options.GetMinimumLogLevelForCategory("UKHO.Security.Authentication.AnAuthenticator"));
-            Assert.AreEqual(LogLevel.Trace, options.GetMinimumLogLevelForCategory("UKHO.Controllers.AController"));
-            Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("System.SomeSystemClass"));
-            Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("ARandomPath\\With\\Some\\Folders"));
-            Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path"));
-            Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path\\WithChild"));
+            Assert.Multiple(() =>
+                            {
+                                Assert.AreEqual(LogLevel.Information, options.GetMinimumLogLevelForCategory("UKHO.Logging.EventLogger"));
+                                Assert.AreEqual(LogLevel.Debug, options.GetMinimumLogLevelForCategory("UKHO.Security.Authentication.AnAuthenticator"));
+                                Assert.AreEqual(LogLevel.Trace, options.GetMinimumLogLevelForCategory("UKHO.Controllers.AController"));
+                                Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("System.SomeSystemClass"));
+                                Assert.AreEqual(LogLevel.Critical, options.GetMinimumLogLevelForCategory("ARandomPath\\With\\Some\\Folders"));
+                                Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path"));
+                                Assert.AreEqual(LogLevel.Warning, options.GetMinimumLogLevelForCategory("AnImportant\\Path\\WithChild"));
+                            });
         }
+
+        [Test]
+        public void ManagedIdentityCorrectSettings_Validate_Successful()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+           
+        }
+
+        [Test]
+        public void ManagedIdentityMissingTokenCredentials_Validate_ThrowException()
+        {
+            //Arrange          
+            options.EventHubFullyQualifiedNamespace = "Correct";
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.AreEqual("TokenCredential", argumentException.ParamName);
+            Assert.That(argumentException.Message, Does.StartWith("Parameters TokenCredential must be set to a valid value"));
+        }
+
+        [Test]
+        public void ManagedIdentityMissingRestOfConfig_Validate_ThrowException()
+        {
+            //Arrange
+            options = new EventHubLogProviderOptions();
+            var tokenCredential = new Mock<TokenCredential>();
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.AreEqual("EventHubEntityPath,Environment,System,Service", argumentException.ParamName);
+            Assert.That(argumentException.Message, Does.StartWith("Parameters EventHubEntityPath,Environment,System,Service must be set to a valid value"));
+        }
+
+        [Test]
+        public void ManagedIdentityWithEnableConnectionValidationTurnedOn_Validate_ThrowsAnArgumentExceptionIfBlocbContainerUriIsRubbish()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            options.EventHubFullyQualifiedNamespace = "test-servicebus.windows.net";          
+            options.DefaultMinimumLogLevel = LogLevel.Critical;
+            options.NodeName = "Bill";
+            options.EnableConnectionValidation = true;
+            options.TokenCredential = tokenCredential.Object;         
+
+            //Act
+            //Assert
+            Assert.Throws<ArgumentException>(() => options.Validate());
+        }
+
+        #region AuthenticationMismatchTests
+
+        // Both EH and SA uses ID means OK
+
+        [Test]
+        public void ManagedIdentityIsUsedForBothEventHubAndStorageAccount_Validate_Successful()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+        }
+
+        // EH uses ID but not SA means Exception
+        
+        [Test]
+        public void EventHubUsesManagedIdentityButStorageAccountDoesNot_Validate_ThrowException()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, true, "string", "string");
+            options.EventHubFullyQualifiedNamespace = "Correct";
+            options.TokenCredential = tokenCredential.Object;
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.That(argumentException.Message, Is.EqualTo("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
+        }
+        
+        // SA uses ID but not EH means Exception
+        
+        [Test]
+        public void StorageAccountUsesManagedIdentityButEventHubDoesNot_Validate_ThrowException()
+        {
+            //Arrange
+            var tokenCredential = new Mock<TokenCredential>();
+            var validStorageOptions = new AzureStorageLogProviderOptions(new Uri(_validUriString), tokenCredential.Object, true, "string", "string");
+            options.EventHubConnectionString = "Correct";
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            var argumentException = Assert.Throws<ArgumentException>(() => options.Validate());
+            
+            //Assert
+            Assert.NotNull(argumentException);
+            Assert.That(argumentException.Message, Does.StartWith("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using."));
+        }
+
+        // Both EH and SA uses not ID means OK
+
+        [Test]
+        public void ManagedIdentityIsNotUsedForBothEventHubAndStorageAccount_Validate_Successful()
+        {
+            //Arrange
+            options.EventHubConnectionString = "Connect!";
+            var validStorageOptions = new AzureStorageLogProviderOptions(_validUriString, true, "string", "string");
+            options.AzureStorageLogProviderOptions = validStorageOptions;
+
+            //Act
+            //Assert
+            Assert.DoesNotThrow(() => options.Validate());
+        } 
+
+        #endregion
     }
 }
