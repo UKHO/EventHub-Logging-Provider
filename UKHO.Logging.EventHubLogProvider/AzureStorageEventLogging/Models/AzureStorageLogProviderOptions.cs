@@ -93,7 +93,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             => AzureStorageBlobContainerUri != null;
 
         /// <summary>
-        ///      The Azure managed identity credential to use for authorization.
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
         /// </summary>
         public TokenCredential AzureStorageCredential { get; }
 

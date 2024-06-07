@@ -37,12 +37,15 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces
         Uri AzureStorageBlobContainerUri { get; }
 
         /// <summary>
-        ///     To determine if we are using managed identity or connection string
+        ///     Gets a value indicating if Managed Identity authentication is configured.
         /// </summary>
+        /// <returns>
+        ///     `true` if the <see cref="EventHubFullyQualifiedNamespace"/> property has a value and Managed Identity should be used for authentication, otherwise `false`.
+        /// </returns>
         bool IsUsingManagedIdentity { get; }
 
         /// <summary>
-        ///      The Azure managed identity credential to use for authorization..
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
         /// </summary>
         TokenCredential AzureStorageCredential { get; }
 

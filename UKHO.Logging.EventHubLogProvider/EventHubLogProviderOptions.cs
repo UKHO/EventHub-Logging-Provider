@@ -56,7 +56,7 @@ namespace UKHO.Logging.EventHubLogProvider
         public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
        
         /// <summary>
-        ///      The Azure managed identity credential to use for authorization.
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
         /// </summary>
         public TokenCredential TokenCredential { get; set; } = null;
        

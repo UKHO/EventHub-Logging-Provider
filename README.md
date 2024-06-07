@@ -2,9 +2,9 @@
 
 The Event Hub Log Provider provides a logging sink for the Microsoft.Extensions.Logging.Abstractions. Logs are sent to Event Hub as a JSON message. The EventHubLogProvider provides a number of standard properties to enrich every log message, and provides a mechanism to add application specific custom properties to logs.
 
-Event Hub Log Provider now supports authentication using both Managed Service Identity or connection string/SAS Uri to Event Hub or Azure storage container respectively. However they both should use either Managed Identity to both Event Hub and Azure storage or neither. 
+The Event Hub Log Provider supports Managed Identity and connection string/SAS URI authentication for Event Hub and Azure Storage container access. However, it is required to use either Managed Identity for both Event Hub and Azure Storage or neither.
 
-Configuring using managed identity or connection string is shown below.
+Instructions to configure the services with either a managed identity or a connection string are below.
 
 ## Getting Started
 
@@ -352,7 +352,7 @@ options.AzureStorageLogProviderOptions = new AzureStorageLogProviderOptions(
 
 ```
 
-### Example of a configuration section(json) 
+#### Example of a configuration section(json) 
 
 ```json
     "AzureStorageOptions": {
@@ -363,7 +363,8 @@ options.AzureStorageLogProviderOptions = new AzureStorageLogProviderOptions(
   }
 ```
 
-[!NOTE] The application (or user if running in Visual Studio) will require `Storage Blob Data Contributor` role on the Event hub. 
+> [!NOTE] 
+> The Managed Identity principal (or user if running on localhost) will require `Storage Blob Data Contributor` role on the Event hub. 
 
 ### Azure Storage Provider Functional Diagram
 
