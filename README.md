@@ -275,10 +275,9 @@ The JsonConverter must implement `WriteJson`, but the `ReadJson` method can be l
 
 ## Azure Storage Logging Provider
 
-The Azure Storage Logging Provider is a storage logging provider that stores messages with size equal or greater than 1Mb into an Azure storage container. Finally, it updates the log entry with the azure storage blob details. Enabling the Azure storage provider is optional.
+The Azure Storage Logging Provider is a storage logging provider that stores messages with size equal or greater than 1Mb into an Azure storage container. Finally, it updates the log entry with the azure storage blob details. Enabling the Azure storage provider is optional. It is enabled by providing the `AzureStorageLogProviderOptions` as shown below.
 
-The provider can be enabled by providing the AzureStorageLogProviderOptions.
-It supports both managed identity or SAS url for authentication. Below are example for each.
+
 
 ### Configuration using Azure Storage conatiner SAS url
 
