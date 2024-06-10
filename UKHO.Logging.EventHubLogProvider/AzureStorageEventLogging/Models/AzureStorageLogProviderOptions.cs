@@ -82,7 +82,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
         /// </summary>
         public Uri AzureStorageContainerSasUrl { get; }
         /// <summary>
-        ///     The azure storage blob uri
+        ///     The azure storage blob container uri
         /// </summary>
         public Uri AzureStorageBlobContainerUri { get; }
 
@@ -93,7 +93,7 @@ namespace UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models
             => AzureStorageBlobContainerUri != null;
 
         /// <summary>
-        ///     Credentials to authenticate with Storage account using  managed identity 
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
         /// </summary>
         public TokenCredential AzureStorageCredential { get; }
 

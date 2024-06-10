@@ -49,8 +49,15 @@ namespace UKHO.Logging.EventHubLogProvider
         ///     connection with EventHub can't be established and validated
         /// </summary>
         public bool EnableConnectionValidation { get; set; } = false;
-        public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
 
+        /// <summary>
+        ///     The fully qualified Event Hubs namespace to connect to.
+        /// </summary>
+        public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
+       
+        /// <summary>
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
+        /// </summary>
         public TokenCredential TokenCredential { get; set; } = null;
        
         /// <summary>
