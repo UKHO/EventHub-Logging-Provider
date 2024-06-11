@@ -78,8 +78,8 @@ stages:
   
 - stage: Proget
   jobs:
-  - deployment: Publish_To_ProGet
-    displayName: Publish To ProGet
+  - deployment: Publish_To_ProGetCloud
+    displayName: Publish To ProGetCloud
     pool:
       name: NautilusRelease
     environment: EventHubLogProvider-ProGet
