@@ -19,8 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
+
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
 
 namespace UKHO.Logging.EventHubLogProvider
@@ -39,12 +41,26 @@ namespace UKHO.Logging.EventHubLogProvider
         private EventHubProducerClient eventHubClient;
         public AzureStorageBlobContainerBuilder AzureStorageBlobContainerBuilder { get; set; }
 
+        public EventHubClientWrapper(string fullyQualifiedNamespace,
+                                     string eventHubName,
+                                     TokenCredential credentials,
+                                     AzureStorageLogProviderOptions azureStorageLogProviderOptions)
+        {
+            eventHubClient = new EventHubProducerClient(fullyQualifiedNamespace, eventHubName, credentials);
+            SetupAzureStorageBlobContainer(azureStorageLogProviderOptions);
+        }
+
         public EventHubClientWrapper(string eventHubConnectionString, string eventHubEntityPath, AzureStorageLogProviderOptions azureStorageLogProviderOptions)
         {
             eventHubClient = new EventHubProducerClient(eventHubConnectionString, eventHubEntityPath);
+            SetupAzureStorageBlobContainer(azureStorageLogProviderOptions);
+        }
+
+        private void SetupAzureStorageBlobContainer(AzureStorageLogProviderOptions azureStorageLogProviderOptions)
+        {
             var azureStorageBlobContainerBuilder = new AzureStorageBlobContainerBuilder(azureStorageLogProviderOptions);
             azureStorageBlobContainerBuilder.Build();
-            this.AzureStorageBlobContainerBuilder = azureStorageBlobContainerBuilder;
+            AzureStorageBlobContainerBuilder = azureStorageBlobContainerBuilder;
         }
 
         private void ReleaseUnmanagedResources()

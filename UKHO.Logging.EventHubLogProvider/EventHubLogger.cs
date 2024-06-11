@@ -18,10 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Extensions.Logging;
 
-using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Interfaces;
 
 namespace UKHO.Logging.EventHubLogProvider
 {

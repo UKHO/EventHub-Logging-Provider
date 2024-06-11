@@ -2,7 +2,7 @@ variables:
   projectVersion: 1
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
-  progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
+  progetFeed: https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/v3/index.json
   
 name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
@@ -21,7 +21,7 @@ stages:
       displayName: 'Use .NET Core sdk'
       inputs:
         packageType: sdk
-        version: 6.x
+        version: 8.x
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
     - script: dotnet restore

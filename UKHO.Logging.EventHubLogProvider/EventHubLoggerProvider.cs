@@ -60,23 +60,30 @@ namespace UKHO.Logging.EventHubLogProvider
     {
         public static ILoggerFactory AddEventHub(this ILoggerFactory loggerFactory, Action<EventHubLogProviderOptions> config)
         {
-            var options = new EventHubLogProviderOptions();
-            config(options);
-            options.Validate();
-            var eventHubClientWrapper = new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions);
-            loggerFactory.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(eventHubClientWrapper, options.CustomLogSerializerConverters)));
+            var (wrapper, options) = GetValidEventHubClient(config);
+
+            loggerFactory.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(wrapper, options.CustomLogSerializerConverters)));
             return loggerFactory;
         }
 
         [ExcludeFromCodeCoverage] // this is not testable due to AddProvider being a Microsoft extension method
         public static ILoggingBuilder AddEventHub(this ILoggingBuilder loggingBuilder, Action<EventHubLogProviderOptions> config)
         {
+            var (wrapper, options) = GetValidEventHubClient(config);
+
+            loggingBuilder.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(wrapper, options.CustomLogSerializerConverters)));
+            return loggingBuilder;
+        }
+
+        private static (EventHubClientWrapper, EventHubLogProviderOptions) GetValidEventHubClient(Action<EventHubLogProviderOptions> config)
+        {
             var options = new EventHubLogProviderOptions();
             config(options);
             options.Validate();
-            var eventHubClientWrapper = new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions);
-            loggingBuilder.AddProvider(new EventHubLoggerProvider(options, new EventHubLog(eventHubClientWrapper, options.CustomLogSerializerConverters)));
-            return loggingBuilder;
+
+            return (options.IsUsingManagedIdentity ?
+                             new EventHubClientWrapper(options.EventHubFullyQualifiedNamespace, options.EventHubEntityPath, options.TokenCredential, options.AzureStorageLogProviderOptions) :
+                             new EventHubClientWrapper(options.EventHubConnectionString, options.EventHubEntityPath, options.AzureStorageLogProviderOptions), options);
         }
     }
 }

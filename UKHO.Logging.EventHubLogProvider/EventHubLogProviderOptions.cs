@@ -18,9 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Azure.Core;
 using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 
 using UKHO.Logging.EventHubLogProvider.AzureStorageEventLogging.Models;
@@ -42,14 +41,25 @@ namespace UKHO.Logging.EventHubLogProvider
         public Action<IDictionary<string, object>> AdditionalValuesProvider { get; set; } = d => { };
         public AzureStorageLogProviderOptions AzureStorageLogProviderOptions { get; set; }
 
+        [Obsolete(message: "Use EnableConnectionValidation instead.", error: true)]
+        public bool ValidateConnectionString { get => EnableConnectionValidation; set => EnableConnectionValidation = value; }
+
         /// <summary>
         ///     If set to true, the configuration will be actively validated with EventHub and will throw an ArgumentException if the
         ///     connection with EventHub can't be established and validated
         /// </summary>
-        // ReSharper disable once MemberCanBePrivate.Global
-        // ReSharper disable once RedundantDefaultMemberInitializer
-        public bool ValidateConnectionString { get; set; } = false;
+        public bool EnableConnectionValidation { get; set; } = false;
 
+        /// <summary>
+        ///     The fully qualified Event Hubs namespace to connect to.
+        /// </summary>
+        public string EventHubFullyQualifiedNamespace { get; set; } = string.Empty;
+       
+        /// <summary>
+        ///      The <see cref="Azure.Core.TokenCredential"/> to use for authentication.
+        /// </summary>
+        public TokenCredential TokenCredential { get; set; } = null;
+       
         /// <summary>
         ///     If set to "#MachineName", this will resolve to SystemEnvironment.MachineName at runtime.
         /// </summary>
@@ -77,9 +87,25 @@ namespace UKHO.Logging.EventHubLogProvider
         public void Validate()
         {
             var errors = new List<string>();
+            bool bothUsingManagedIdentity = true;
 
-            if (string.IsNullOrEmpty(EventHubConnectionString))
-                errors.Add(nameof(EventHubConnectionString));
+            if (IsUsingManagedIdentity)
+            {
+                if (TokenCredential is null)
+                    errors.Add(nameof(TokenCredential));
+                if (AzureStorageLogProviderOptions != null && !AzureStorageLogProviderOptions.IsUsingManagedIdentity)
+                    bothUsingManagedIdentity = false;
+            }        
+            else
+            {
+                if (string.IsNullOrEmpty(EventHubConnectionString))
+                    errors.Add(nameof(EventHubConnectionString));
+                if (AzureStorageLogProviderOptions != null && AzureStorageLogProviderOptions.IsUsingManagedIdentity)
+                    bothUsingManagedIdentity = false;
+            }
+            if (!bothUsingManagedIdentity)
+                throw new ArgumentException("Event Hub and Storage Account Log Providers must both be using Managed Identity or neither using.");
+
             if (string.IsNullOrEmpty(EventHubEntityPath))
                 errors.Add(nameof(EventHubEntityPath));
             if (string.IsNullOrEmpty(Environment))
@@ -102,34 +128,40 @@ namespace UKHO.Logging.EventHubLogProvider
 
             if (CustomLogSerializerConverters==null)
                 throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not be null.");
-            
+
             if (CustomLogSerializerConverters.Any(c => c == null))
                 throw new ArgumentNullException(nameof(CustomLogSerializerConverters), $"Parameter {nameof(CustomLogSerializerConverters)} can not contain null entries.");
+            
             var badConverters = CustomLogSerializerConverters.Where(s => !s.CanWrite).ToList();
             if (badConverters.Any())
             {
                 throw new ArgumentException($"{nameof(CustomLogSerializerConverters)} must be able to write: {string.Join(",", badConverters.Select(c => c?.GetType().FullName??"null"))}");
             }
 
-            if (ValidateConnectionString)
-                ValidateConnection();
+            if (EnableConnectionValidation)
+                ValidateConnectionToEventHub();
         }
-
-        private void ValidateConnection()
+        
+        public bool IsUsingManagedIdentity
+            => !string.IsNullOrEmpty(EventHubFullyQualifiedNamespace);
+  
+        private void ValidateConnectionToEventHub()
         {
-            var eventHubClientWrapper = new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
+            var eventHubClientWrapper = IsUsingManagedIdentity ?
+                 new EventHubClientWrapper(EventHubFullyQualifiedNamespace, EventHubEntityPath, TokenCredential, AzureStorageLogProviderOptions) :
+                 new EventHubClientWrapper(EventHubConnectionString, EventHubEntityPath, AzureStorageLogProviderOptions);
+
             eventHubClientWrapper.ValidateConnection();
         }
-
         public LogLevel GetMinimumLogLevelForCategory(string categoryName)
         {
             var categoryTokens = SplitKey(categoryName);
             var configuration = MinimumLogLevels
-                .Select(kv => new KeyValuePair<string[], LogLevel>(SplitKey(kv.Key), kv.Value))
-                .Where(kv =>
-                       {
-                           return kv.Key.Select((k, i) => (k, i))
-                               .All(k => k.Item2 < categoryTokens.Length && k.Item1 == categoryTokens[k.Item2]);
+            .Select(kv => new KeyValuePair<string[], LogLevel>(SplitKey(kv.Key), kv.Value))
+            .Where(kv =>
+            {
+                return kv.Key.Select((k, i) => (k, i))
+                .All(k => k.Item2 < categoryTokens.Length && k.Item1 == categoryTokens[k.Item2]);
                        })
                 .OrderByDescending(kv => kv.Key.Length)
                 .Select(kv => kv.Value)
