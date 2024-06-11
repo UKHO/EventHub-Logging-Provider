@@ -2,7 +2,7 @@ variables:
   projectVersion: 1
   configuration: Release
   solution: UKHO.Logging.EventHubLogProvider.sln
-  progetFeed: https://proget.ukho.gov.uk/nuget/ukho.trusted/
+  progetFeed: https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/
   
 name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 
