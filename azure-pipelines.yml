@@ -119,12 +119,12 @@ stages:
   
 - stage: proget
   displayName: "Publish to ProGet"
+  dependsOn:
+    - "build"
+    - "checks"
   jobs:
   - deployment: Publish_To_ProGetCloud
     displayName: 'Publish To ProGet Cloud'
-    dependsOn:
-      - "build"
-      - "checks"
     condition: succeeded()
     pool:
       name: NautilusRelease
