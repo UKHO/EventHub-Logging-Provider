@@ -9,6 +9,70 @@ name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 trigger: none
 
 stages:
+- stage: checks
+  displayName: 'Checks'
+  jobs:
+  - job: snyk
+    displayName: 'Run Snyk security scans'
+    pool:
+      name: NautilusBuild
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository (ensure global.json present)'
+        
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core sdk'
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore non-test projects"
+        inputs:
+          command: restore
+          projects: |
+            **/*.csproj
+            !**/*Tests.csproj
+          restoreArguments: '-property:Configuration=$(configuration)'
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\nuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)'
+          packagesDirectory: '$(Build.SourcesDirectory)\packages'
+
+      - task: UkhoSnykScanTask@0
+        displayName: 'Snyk SAST scan'
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true # Fails if any issues are found
+          organization: ukho
+          serviceConnectionEndpoint: Snyk
+          testType: code
+          monitorWhen: never
+          codeSeverityThreshold: medium
+
+      - task: UkhoSnykScanTask@0
+        displayName: 'Snyk SCA scan'
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true # Fails if any issues are found
+          organization: ukho
+          serviceConnectionEndpoint: Snyk
+          testType: app
+          monitorWhen: never
+          severityThreshold: medium
+          additionalArguments: --all-projects
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Snyk scan results'
+        condition: succeededOrFailed()
+        inputs:
+          targetPath: '$(Agent.TempDirectory)' 
+          artifact: Snyk_Scan
+          publishLocation: 'pipeline'
+
 - stage: build
   jobs:
   - job: run_build
@@ -53,10 +117,15 @@ stages:
         path: $(Build.ArtifactStagingDirectory)
         artifact: $(Build.DefinitionName)
   
-- stage: Proget
+- stage: proget
+  displayName: "Publish to ProGet"
   jobs:
   - deployment: Publish_To_ProGetCloud
-    displayName: Publish To ProGetCloud
+    displayName: 'Publish To ProGet Cloud'
+    dependsOn:
+      - "build"
+      - "checks"
+    condition: succeeded()
     pool:
       name: NautilusRelease
     environment: EventHubLogProvider-ProGet
@@ -69,7 +138,11 @@ stages:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
             
-- stage: Nuget
+- stage: nuget
+  displayName: "Publish to Nuget"
+  dependsOn:
+    - "build"
+    - "checks"
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   variables:
     - group: nuget-deployment-vars
