@@ -47,7 +47,7 @@ stages:
         condition: succeededOrFailed()
         inputs:
           failOnIssues: true # Fails if any issues are found
-          organization: ukho
+          organization: observability-LS52jXuMTiWp8zh4KuRtea
           serviceConnectionEndpoint: "Snyk - Observability"
           testType: code
           monitorWhen: never
@@ -58,7 +58,7 @@ stages:
         condition: succeededOrFailed()
         inputs:
           failOnIssues: true # Fails if any issues are found
-          organization: ukho
+          organization: observability-LS52jXuMTiWp8zh4KuRtea
           serviceConnectionEndpoint: "Snyk - Observability"
           testType: app
           monitorWhen: never
