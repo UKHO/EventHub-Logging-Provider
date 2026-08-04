@@ -74,8 +74,10 @@ stages:
           publishLocation: 'pipeline'
 
 - stage: build
+  displayName: "Build"
   jobs:
   - job: run_build
+    displayName: "Run build"
     pool:
       name: NautilusBuild
     workspace:
