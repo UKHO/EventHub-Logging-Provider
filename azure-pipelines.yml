@@ -48,7 +48,7 @@ stages:
         inputs:
           failOnIssues: true # Fails if any issues are found
           organization: ukho
-          serviceConnectionEndpoint: Snyk
+          serviceConnectionEndpoint: "Snyk - Observability"
           testType: code
           monitorWhen: never
           codeSeverityThreshold: medium
@@ -59,7 +59,7 @@ stages:
         inputs:
           failOnIssues: true # Fails if any issues are found
           organization: ukho
-          serviceConnectionEndpoint: Snyk
+          serviceConnectionEndpoint: "Snyk - Observability"
           testType: app
           monitorWhen: never
           severityThreshold: medium
