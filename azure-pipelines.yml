@@ -9,9 +9,75 @@ name: $(Build.DefinitionName)_$(projectVersion).$(date:yy)$(DayOfYear)$(rev:.r)
 trigger: none
 
 stages:
+- stage: checks
+  displayName: 'Checks'
+  jobs:
+  - job: snyk
+    displayName: 'Run Snyk security scans'
+    pool:
+      name: NautilusBuild
+    workspace:
+      clean: all
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository (ensure global.json present)'
+        
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core sdk'
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore non-test projects"
+        inputs:
+          command: restore
+          projects: |
+            **/*.csproj
+            !**/*Tests.csproj
+          restoreArguments: '-property:Configuration=$(configuration)'
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\nuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)'
+          packagesDirectory: '$(Build.SourcesDirectory)\packages'
+
+      - task: UkhoSnykScanTask@0
+        displayName: 'Snyk SAST scan'
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true # Fails if any issues are found
+          organization: observability-LS52jXuMTiWp8zh4KuRtea
+          serviceConnectionEndpoint: "Snyk - Observability"
+          testType: code
+          monitorWhen: never
+          codeSeverityThreshold: medium
+
+      - task: UkhoSnykScanTask@0
+        displayName: 'Snyk SCA scan'
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true # Fails if any issues are found
+          organization: observability-LS52jXuMTiWp8zh4KuRtea
+          serviceConnectionEndpoint: "Snyk - Observability"
+          testType: app
+          monitorWhen: never
+          severityThreshold: medium
+          additionalArguments: --all-projects
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Snyk scan results'
+        condition: succeededOrFailed()
+        inputs:
+          targetPath: '$(Agent.TempDirectory)' 
+          artifact: Snyk_Scan
+          publishLocation: 'pipeline'
+
 - stage: build
+  displayName: "Build"
   jobs:
   - job: run_build
+    displayName: "Run build"
     pool:
       name: NautilusBuild
     workspace:
@@ -29,29 +95,6 @@ stages:
 
     - powershell: ./Apply-AssemblyVersionAndDefaults.ps1 -buildNumber $(Build.BuildNumber) -solutionDirectory $(Build.SourcesDirectory)
       displayName: Apply Version Number
-
-      
-    - task: CmdLine@1
-      displayName: "Run OWASP Dependency Checker"
-      inputs:
-        filename: "dependency-check.bat"
-        arguments: '--project "EventHubLogProvider - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
-
-    - task: PublishBuildArtifacts@1
-      displayName: "Publish Artifact: OWASP Dependency Checker Report"
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
-        ArtifactName: "OWASP Dependency Checker Report"
-
-    - task: PowerShell@1
-      displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
-      inputs:
-        scriptType: inlineScript
-        arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
-        inlineScript: |
-          param($ReportLocation)
-          Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
-  
 
     - script: dotnet build $(solution) -c $(configuration) --no-restore
       displayName: Build Project
@@ -76,10 +119,15 @@ stages:
         path: $(Build.ArtifactStagingDirectory)
         artifact: $(Build.DefinitionName)
   
-- stage: Proget
+- stage: proget
+  displayName: "Publish to ProGet"
+  dependsOn:
+    - "build"
+    - "checks"
   jobs:
   - deployment: Publish_To_ProGetCloud
-    displayName: Publish To ProGetCloud
+    displayName: 'Publish To ProGet Cloud'
+    condition: succeeded()
     pool:
       name: NautilusRelease
     environment: EventHubLogProvider-ProGet
@@ -92,7 +140,11 @@ stages:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
             
-- stage: Nuget
+- stage: nuget
+  displayName: "Publish to Nuget"
+  dependsOn:
+    - "build"
+    - "checks"
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   variables:
     - group: nuget-deployment-vars
