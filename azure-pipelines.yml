@@ -87,7 +87,7 @@ stages:
       displayName: 'Use .NET Core sdk'
       inputs:
         packageType: sdk
-        version: 8.x
+        version: 10.x
         installationPath: $(Agent.ToolsDirectory)/dotnet
 
     - script: dotnet restore
@@ -135,7 +135,14 @@ stages:
       runOnce:
         deploy:
           steps:
-          - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 10.x
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+          
+          - pwsh: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
             env:
               progetApiKey : $(progetApiKey)
             displayName: Publish Package
@@ -158,7 +165,14 @@ stages:
         runOnce:
           deploy:
             steps:
-            - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols
+            - task: UseDotNet@2
+              displayName: 'Use .NET Core sdk'
+              inputs:
+                packageType: sdk
+                version: 10.x
+                installationPath: $(Agent.ToolsDirectory)/dotnet
+                
+            - pwsh: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols
               env:
                 nugetApiKey : $(nugetApiKey)
               displayName: Publish Package
