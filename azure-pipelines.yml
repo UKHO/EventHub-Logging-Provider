@@ -135,6 +135,13 @@ stages:
       runOnce:
         deploy:
           steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 10.x
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+          
           - pwsh: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
             env:
               progetApiKey : $(progetApiKey)
@@ -158,6 +165,13 @@ stages:
         runOnce:
           deploy:
             steps:
+            - task: UseDotNet@2
+              displayName: 'Use .NET Core sdk'
+              inputs:
+                packageType: sdk
+                version: 10.x
+                installationPath: $(Agent.ToolsDirectory)/dotnet
+                
             - pwsh: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols
               env:
                 nugetApiKey : $(nugetApiKey)
